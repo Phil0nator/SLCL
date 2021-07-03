@@ -30,7 +30,7 @@ int main(int argc, char const *argv[])
             while( 1 )
             {
                 char buffer[1024];
-                bzero(buffer, 1024);
+                memset(buffer, 0, 1024);
                 slclerr_t packet = slclRecvTcpSock( sock, buffer, 1024 );
                 if (packet == SLCL_ERROR)
                 {
