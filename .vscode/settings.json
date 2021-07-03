@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "*.cb": "cpp",
+        "*.k": "cpp",
+        "stdint.h": "c",
+        "stdint-gcc.h": "c",
+        "stddef.h": "c",
+        "errors.h": "c",
+        "errno.h": "c",
+        "error.h": "c",
+        "memory.h": "c",
+        "malloc.h": "c",
+        "cstdio": "cpp",
+        "config.h": "c",
+        "unistd.h": "c"
+    }
+}
