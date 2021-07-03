@@ -1,10 +1,10 @@
 CC = gcc
 INCL = -Iinclude
 DBG = -g
-OUT = build/cnetwork.a
+OUT = build/slcl.a
 LIB = 
 ARCHIVER = ar
-OPT = -O3
+OPT = -Os
 
 SRCS := $(shell find src -name *.c)
 HEADERS := $(shell find src -name *.h)

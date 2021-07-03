@@ -2,4 +2,4 @@
 
 
 
-extern void slcl_seterr( const char* msg );
+extern void slclSeterr( const char* msg );

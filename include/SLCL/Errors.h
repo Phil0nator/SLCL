@@ -8,8 +8,8 @@
 SLCL_ENTERCPP
 #endif
 
-extern const char* slcl_strerr();
-extern void slcl_perror( const char* prefix );
+extern const char* slclStrerr();
+extern void slclPerror( const char* prefix );
 
 #ifdef __cplusplus
 SLCL_EXITCPP

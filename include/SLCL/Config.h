@@ -41,4 +41,8 @@ typedef int slclerr_t;
 #define SLCL_ERROR  (-1)
 #define SLCL_LITTLE_ENDIAN ((1 == *(unsigned char *)&(const int){1}))
 
+
+
+
+
 #endif

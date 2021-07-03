@@ -18,7 +18,7 @@ extern const signum_t SLCL_SIGSEGV;
 extern const signum_t SLCL_SIGTERM;
 
 
-extern sigaction_t slcl_sigaction( signum_t signal, sigaction_t action);
+extern sigaction_t slclSigaction( signum_t signal, sigaction_t action);
 
 #ifdef __cplusplus
 SLCL_EXITCPP

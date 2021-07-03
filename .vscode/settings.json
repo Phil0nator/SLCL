@@ -12,6 +12,11 @@
         "malloc.h": "c",
         "cstdio": "cpp",
         "config.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "stdlib.h": "c",
+        "string.h": "c",
+        "network.h": "c",
+        "slcl.h": "c",
+        "socket.h": "c"
     }
 }

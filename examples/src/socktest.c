@@ -3,14 +3,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+
 
 int main(int argc, char const *argv[])
 {
-    struct tcpserver* test = open_tcpserver( SLCL_LOCALHOST, 5500 );
-
+    struct slclTcpServer* test = slclOpenTcpServer( SLCL_LOCALHOST, 5502 );
+    
     if (test == SLCL_FAILED)
     {
-        slcl_perror("socktest");
+        slclPerror("socktest");
         exit(1);
     }
     else
@@ -20,30 +23,38 @@ int main(int argc, char const *argv[])
 
     while (1)
     {
-        struct tcpsock* sock;
-        if ((sock = accept_tcpserver(test)) != SLCL_FAILED)
+        struct slclTcpSock* sock;
+        if ((sock = slclAcceptTcpServer(test)) != SLCL_FAILED)
         {
             puts("New Connection");
             while( 1 )
             {
-                struct tcppacket* packet = recv_tcpsock( sock, 1024 );
-                if (packet == SLCL_FAILED)
+                char buffer[1024];
+                bzero(buffer, 1024);
+                slclerr_t packet = slclRecvTcpSock( sock, buffer, 1024 );
+                if (packet == SLCL_ERROR)
                 {
                     fputs("Connection lost.", stderr);
                     break;
                 }
-                fwrite( read_tcppacket( packet ), sizeof_tcppacket( packet ), 1, stdout );
-                free_tcppacket(packet);            
+                fwrite( buffer, packet, 1, stdout );
+
+                if ( strncmp( buffer, "exit", 4 ) == 0 )
+                {
+                    slclCloseTcpSock( sock, SLCL_SHUTDOWN_ALL );
+                    puts("Connection closed.");
+                    break;
+                }
+
             }
         }
         else
         {
-            slcl_perror("socktest");
+            slclPerror("socktest");
             exit(1);
         }
     }
 
-    exit:
 
     return 0;
 }

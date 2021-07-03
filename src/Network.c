@@ -10,96 +10,37 @@
 SLCL_ENTERCPP
 #endif
 
-// General declarations
-typedef struct tcppacket
-{
-    char* data; // Base pointer of memory
-    char* ptr;  // Position pointer in owned memory
-    size_t size;// Size of all memory
-    
-} tcppacket_t;
-
-struct tcppacket* create_tcppacket()
-{
-    tcppacket_t* out = malloc(sizeof(tcppacket_t));
-    // Data is malloc'ed by default
-    out->data = malloc(1);
-    out->ptr = out->data;
-    out->size = 1;
-
-    return out;
-}
-
-void realloc_tcppack( struct tcppacket* dest, size_t finalSize )
-{
-    // Check if reallocation is needed
-    if (finalSize > dest->size)
-    {
-        // if so, reallocate the data field
-        char* newdata = realloc( dest->data, finalSize );
-        if (newdata == NULL)
-        {
-            fputs("SLCL: Ran out of memory.", stderr);
-            exit(1);
-        }
-        // At this point all of dest's fields need to be updated
-        size_t currentPosition = dest->ptr - dest->data;
-
-        // Could be new pointer
-        dest->data = newdata;
-        // Might need to be new offset of that pointer
-        dest->ptr = dest->data + currentPosition;
-        // New size
-        dest->size = finalSize;
-    }
-}
-
-void write_tcppack( struct tcppacket* dest, const char* data, size_t size )
-{
-    // Determine final size of packet
-    size_t finalSize = (dest->ptr - dest->data) + size;
-
-    // Ensure that enough size will be available
-    realloc_tcppack( dest, finalSize );
-
-    // Copy data into the packet
-    memcpy( dest->ptr, data, size );
-    // Update the position pointer
-    dest->ptr += size;
-}
-
-void free_tcppacket( struct tcppacket* packet )
-{
-    if (packet->data) free(packet->data);
-    free(packet);
-}
-size_t sizeof_tcppacket( struct tcppacket* packet )
-{
-    return packet->size;
-}
-char* read_tcppacket( struct tcppacket* packet )
-{
-    return packet->data;
-}
-char* disown_tcppacket( struct tcppacket* packet )
-{
-    char* out = packet->data;
-    packet->data = NULL;
-    return out;
-}
-
-
-static void memrcpy( const char* src, char* dest, size_t size )
-{
-    for(size_t i = 1; i <= size; i++)
-    {
-        dest[size-i] = src[i-1];
-    }
-}
-
 
 #if defined(SLCL_TARGET_WIN)
 // Windows declarations
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#pragma comment (lib, "Ws2_32.lib")
+
+struct slclTcpSock* slclOpenTcpSock( const char* ip, short port )
+{
+
+}
+
+struct slclTcpServer* slclOpenTcpServer( const char* ip, short port );
+
+struct slclTcpSock* slclAcceptTcpServer( struct slclTcpServer* server );
+
+slclerr_t slclSendTcpSock( struct slclTcpSock* sock, const char* data, size_t bytes );
+
+slclerr_t slclRecvTcpSock( struct slclTcpSock* sock, char* buffer, size_t bytes );
+
+slclerr_t slclRecvTcpSockExact( struct slclTcpSock* sock, char* buffer, size_t bytes );
+
+slclerr_t slclCloseTcpSock( struct slclTcpSock* socket, enum slclShutdownMethod how );
+
+slclerr_t slclCloseTcpServer( struct slclTcpServer* server, enum slclShutdownMethod how )
+{
+    
+}
 
 
 #elif defined(SLCL_TARGET_UNIXBASED)
@@ -111,15 +52,53 @@ static void memrcpy( const char* src, char* dest, size_t size )
 
 typedef int fd_t;
 
-typedef struct tcpsock
+typedef struct slclTcpSock
 {
     fd_t fd;
 } tcpsock_t;
 
-typedef struct tcpserver
+typedef struct slclTcpServer
 {
     fd_t fd;
 } tcpserver_t;
+
+
+
+/**
+ * slclCloseTcpSock will free all the resources being used by a tcp socket.
+ * @param socket a slclTcpSock
+ * @returns
+ */
+
+slclerr_t slclCloseTcpSock( struct slclTcpSock* socket, enum slclShutdownMethod how )
+{
+    slclerr_t error = shutdown(socket->fd, how);
+    if (error == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    free(socket);
+}
+
+/**
+ * slclCloseTcpSock will free all the resources being used by a tcp server. 
+ * ( this does NOT include any clients that may have been created through
+ *  calls to slclAcceptTcpServer )
+ * @param socket a slclTcpSock
+ * @returns
+ */
+slclerr_t slclCloseTcpServer( struct slclTcpServer* server, enum slclShutdownMethod how )
+{
+    slclerr_t error = shutdown(server->fd, how);
+    if (error == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    free(socket);
+}
+
 
 // Open a socket, and process an ip/port
 fd_t createUnixTCPSockAddrPair( const char* ip, struct sockaddr_in* addr )
@@ -129,20 +108,20 @@ fd_t createUnixTCPSockAddrPair( const char* ip, struct sockaddr_in* addr )
     fd_t temporary = socket( AF_INET, SOCK_STREAM, 0 );
     if (temporary == -1)
     {
-        slcl_seterr( strerror( errno ) );
+        slclSeterr( strerror( errno ) );
         return -1;
     }
     // Process an ip address as %d.%d.%d.%d into sockaddr_in
     if ((err = inet_aton( ip, &addr->sin_addr )) == 0)
     {
-        slcl_seterr( "Invalid IP address." );
+        slclSeterr( "Invalid IP address." );
         return -1;
     }
     // return socket file descriptor
     return temporary;
 }
 
-struct tcpsock* open_tcpsock( const char* ip, short port )
+struct slclTcpSock* slclOpenTcpSock( const char* ip, short port )
 {
     
     slclerr_t err;
@@ -162,70 +141,58 @@ struct tcpsock* open_tcpsock( const char* ip, short port )
     // Try to connect
     if ((err = connect( temporary, (struct sockaddr*) &address, sizeof(struct sockaddr_in) )) == -1)
     {
-        slcl_seterr( strerror( errno ) );
+        slclSeterr( strerror( errno ) );
         return SLCL_FAILED;
     }
     
     // return new socket if all has gone well
-    struct tcpsock* outsock = malloc( sizeof(struct tcpsock) );
+    struct slclTcpSock* outsock = malloc( sizeof(struct slclTcpSock) );
     outsock->fd = temporary;
     return outsock;
 
 }
-slclerr_t send_tcpsock( struct tcpsock* sock, const char* data, size_t bytes )
+slclerr_t slclSendTcpSock( struct slclTcpSock* sock, const char* data, size_t bytes )
 {
     slclerr_t err;
 
     if ((err = send(sock->fd, data, bytes, 0)) == -1)
     {
-        slcl_seterr( strerror( errno ) );
+        slclSeterr( strerror( errno ) );
         return SLCL_ERROR;
     }
 
     return err;
 
 }
-slclerr_t send_tcpsockpack( struct tcpsock* sock, struct tcppacket* data )
+
+slclerr_t slclRecvTcpSock( struct slclTcpSock* sock, char* buffer, size_t bytes )
 {
-    return send_tcpsock( sock, data->data, data->size );
-}
-struct tcppacket* recv_tcpsock( struct tcpsock* sock, size_t bytes )
-{
-    struct tcppacket* out = create_tcppacket();
-    realloc_tcppack(out, bytes);
     slclerr_t recved;
-    if ((recved = recv( sock->fd, out->data, bytes, 0)) == -1)
+    if ((recved = recv( sock->fd, buffer, bytes, 0)) == -1)
     {
-        free_tcppacket(out);
-        slcl_seterr( strerror( errno ) );
-        return SLCL_FAILED;
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
     }
-    out->size = recved;
-    return out;
+    return recved;
 }
-struct tcppacket* recv_tcpsock_exact( struct tcpsock* sock, size_t bytes )
+slclerr_t slclRecvTcpSockExact( struct slclTcpSock* sock, char* buffer, size_t bytes )
 {
-    struct tcppacket* out = create_tcppacket();
-    realloc_tcppack( out, bytes );
     slclerr_t recved = 0;
     while (recved < bytes)
     {
         slclerr_t recviter = 0;
-        if ((recviter = recv(sock->fd, out->ptr, bytes - recved, 0)) == -1)
+        if ((recviter = recv(sock->fd, buffer, bytes - recved, 0)) == -1)
         {
-            free_tcppacket(out);
-            slcl_seterr( strerror( errno ) );
-            return SLCL_FAILED;
+            slclSeterr( strerror( errno ) );
+            return SLCL_ERROR;
         }
-        out->ptr += recviter;
         recved += recviter;
     }
-
-    return out;
+    return bytes;
 }
 
 
-struct tcpserver* open_tcpserver( const char* ip, short port )
+struct slclTcpServer* slclOpenTcpServer( const char* ip, short port )
 {
 
     slclerr_t err;
@@ -242,23 +209,23 @@ struct tcpserver* open_tcpserver( const char* ip, short port )
     // try to bind socket
     if ((err = bind( temporary, (struct sockaddr*) &address, sizeof(struct sockaddr) )) == -1)
     {
-        slcl_seterr( strerror( errno ) );
+        slclSeterr( strerror( errno ) );
         return SLCL_FAILED;
     }
     // try to listen
     if ((err = listen( temporary, SOMAXCONN )) == -1)
     {
-        slcl_seterr( strerror( errno ) );
+        slclSeterr( strerror( errno ) );
         return SLCL_FAILED;
     }
     // return new server if all has gone well
-    struct tcpserver* outsock = malloc( sizeof(struct tcpserver) );
+    struct slclTcpServer* outsock = malloc( sizeof(struct slclTcpServer) );
     outsock->fd = temporary;
     return outsock;
 
 }
 
-struct tcpsock* accept_tcpserver( struct tcpserver* server )
+struct slclTcpSock* slclAcceptTcpServer( struct slclTcpServer* server )
 {
 
     slclerr_t err;
@@ -269,11 +236,11 @@ struct tcpsock* accept_tcpserver( struct tcpserver* server )
     // (blocking)
     if ((err = accept( server->fd, (struct sockaddr*) &addr, &size )) == -1)
     {
-        slcl_seterr( strerror( errno ) );
+        slclSeterr( strerror( errno ) );
         return SLCL_FAILED;
     }
     // Once accept has found a client, it is returned here
-    struct tcpsock* outsock = malloc( sizeof( struct tcpsock ) );
+    struct slclTcpSock* outsock = malloc( sizeof( struct slclTcpSock ) );
     outsock->fd = err;
     return outsock;
 

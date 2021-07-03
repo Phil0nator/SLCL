@@ -1,9 +1,9 @@
 CC = gcc
 INCL = -I../include
 DBG = -g
-LIB = ../build/cnetwork.a
+LIB = ../build/slcl.a
 OPT = -O3
-WARN = -Wall -Wextra
+WARN = -Wall -Wextra 
 
 ARCHIVER = ar
 

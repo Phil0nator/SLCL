@@ -18,13 +18,13 @@ const signum_t SLCL_SIGSEGV = SIGSEGV;
 const signum_t SLCL_SIGTERM = SIGTERM;
 
 
-sigaction_t slcl_sigaction( signum_t sig, sigaction_t action)
+sigaction_t slclSigaction( signum_t sig, sigaction_t action)
 {
 
     sigaction_t oldhandle = signal( sig, action );
     if (oldhandle == SIG_ERR)
     {
-        slcl_seterr( strerror( errno ) );
+        slclSeterr( strerror( errno ) );
         return SLCL_FAILED;
     }
     return oldhandle;
@@ -45,12 +45,12 @@ const signum_t SLCL_SIGTERM = SIGTERM;
 typedef void(*unix_sigaction_t)(int);
 
 
-sigaction_t slcl_sigaction( signum_t sig, sigaction_t action)
+sigaction_t slclSigaction( signum_t sig, sigaction_t action)
 {
     __sighandler_t oldhandle = signal( sig, (unix_sigaction_t) action );
     if (oldhandle == SIG_ERR)
     {
-        slcl_seterr( strerror( errno ) );
+        slclSeterr( strerror( errno ) );
         return SLCL_FAILED;
     }
     return ( sigaction_t ) oldhandle;
