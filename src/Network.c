@@ -218,7 +218,7 @@ slclerr_t slclBind(struct slclSock* socket, struct slclSockaddr_in* addr)
     if (bind(socket->s, (struct sockaddr*)(&addr->addr), sizeof(addr->addr)) == SOCKET_ERROR)
     {
         slclSetWsaErrorMsg();
-        return SLCL_FAILED;
+        return SLCL_ERROR;
     }
     return SLCL_SUCCESS;
 }
@@ -227,7 +227,7 @@ slclerr_t slclListen(struct slclSock* socket, int backlog)
     if ((listen(socket->s, backlog)) == SOCKET_ERROR)
     {
         slclSetWsaErrorMsg();
-        return SLCL_FAILED;
+        return SLCL_ERROR;
     }
     return SLCL_SUCCESS;
 }

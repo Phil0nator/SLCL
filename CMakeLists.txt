@@ -9,7 +9,7 @@ set(socktest examples/src/socktest.c  )
 
 
 # -- Library --
-add_library( SLCL STATIC src/Network.c src/Errors.c src/Signals.c src/Mmap.c  )
+add_library( SLCL STATIC src/Network.c src/Errors.c src/Signals.c src/Mmap.c   "src/Library.c")
 target_include_directories(SLCL PUBLIC "include")
 
 # -- Examples --

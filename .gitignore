@@ -8,3 +8,5 @@ CMakeCache.txt
 *.exe
 *.json
 build/
+examples/Makefile
+Makefile
