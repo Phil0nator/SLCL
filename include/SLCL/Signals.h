@@ -8,7 +8,7 @@ SLCL_ENTERCPP
 #endif
 
 typedef int signum_t;
-typedef void (*sigaction_t)(int, int); /* Second integer value not used on unix systems */
+typedef void (*sigaction_t)(int);
 
 extern const signum_t SLCL_SIGABRT;
 extern const signum_t SLCL_SIGFPE;

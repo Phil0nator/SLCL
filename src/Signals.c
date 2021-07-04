@@ -21,7 +21,7 @@ const signum_t SLCL_SIGTERM = SIGTERM;
 sigaction_t slclSigaction( signum_t sig, sigaction_t action)
 {
 
-    sigaction_t oldhandle = signal( sig, action );
+    _crt_signal_t oldhandle = signal( sig, action );
     if (oldhandle == SIG_ERR)
     {
         slclSeterr( strerror( errno ) );

@@ -17,29 +17,221 @@ SLCL_ENTERCPP
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-
 #pragma comment (lib, "Ws2_32.lib")
 
+typedef struct slclTcpSock
+{
+    SOCKET s;
+} slclTcpSock_t;
+
+typedef struct slclTcpServer
+{
+    SOCKET s;
+} slclTcpServer_t;
+
+slclerr_t slclInitWinsock()
+{
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+        return SLCL_ERROR;
+    }
+    return 0;
+}
+
+void slclSetWsaErrorMsg()
+{
+    memset(slclGetErrorBuf(), 0, SLCL_ERRORBUF_SIZE);
+    FormatMessage(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        WSAGetLastError(),
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        slclGetErrorBuf(),
+        SLCL_ERRORBUF_SIZE,
+        NULL);
+}
+
+slclerr_t slclConstructBaseWindowsSockaddr(struct sockaddr_in* addr, const char* ip, short port)
+{
+    slclerr_t err = inet_pton(AF_INET, ip, &addr->sin_addr.s_addr);
+    if (!err)
+    {
+        slclSeterr("Invalid IP address.");
+        return SLCL_ERROR;
+    }
+    addr->sin_family = AF_INET;
+    addr->sin_port = htons(port);
+    return 0;
+}
+
+SOCKET slclConstructBaseWindowsTcp()
+{
+    slclInitWinsock();
+    SOCKET tmp;
+    if ((tmp = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+    {
+        slclSetWsaErrorMsg();
+        return INVALID_SOCKET;
+    }
+    
+
+    return tmp;
+}
+
+
 struct slclTcpSock* slclOpenTcpSock( const char* ip, short port )
+{
+    
+    SOCKET tmp = slclConstructBaseWindowsTcp(ip, port);
+    if (tmp == INVALID_SOCKET)
+    {
+        return SLCL_FAILED;
+    }
+
+    struct sockaddr_in addr;
+    slclerr_t err = slclConstructBaseWindowsSockaddr(&addr, ip, port);
+
+    if (err == SLCL_ERROR)
+    {
+        return SLCL_FAILED;
+    }
+
+    if ((connect(tmp, (struct sockaddr*)&addr, sizeof(addr)) < 0))
+    {
+        slclSetWsaErrorMsg();
+        return INVALID_SOCKET;
+    }
+
+    struct slclTcpSock* out = malloc(sizeof(slclTcpSock_t));
+    if (out == 0) {
+        slclSeterr("Out of memory.");
+        return SLCL_FAILED;
+    }
+    out->s = tmp;
+    return out;
+
+}
+
+struct slclTcpServer* slclOpenTcpServer(const char* ip, short port)
+{
+    slclInitWinsock();
+    SOCKET tmp = slclConstructBaseWindowsTcp();
+    if (tmp == INVALID_SOCKET)
+    {
+        return SLCL_FAILED;
+    }
+    struct sockaddr_in addr;
+    slclerr_t err = slclConstructBaseWindowsSockaddr(&addr, ip, port);
+    if (err == SLCL_ERROR)
+    {
+        return SLCL_FAILED;
+    }
+    
+    if (bind(tmp, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_FAILED;
+    }
+
+    if ((listen(tmp, 4096)) == SOCKET_ERROR)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_FAILED;
+    }
+
+    struct slclTcpServer* out = malloc(sizeof(slclTcpServer_t));
+    if (out == 0)
+    {
+        slclSeterr("Out of memory.");
+        return SLCL_FAILED;
+    }
+
+    out->s = tmp;
+    return out;
+
+}
+
+struct slclTcpSock* slclAcceptTcpServer(struct slclTcpServer* server)
+{
+
+    SOCKET newsock;
+    struct sockaddr_in client;
+    newsock = accept(server->s, NULL, NULL);
+    if (newsock == INVALID_SOCKET)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_FAILED;
+    }
+
+    struct slclTcpSock* out = malloc(sizeof(struct slclTcpSock));
+    if (out == 0)
+    {
+        slclSeterr("Out of memory.");
+        return SLCL_FAILED;
+    }
+    out->s = newsock;
+    return out;
+
+}
+
+slclerr_t slclSendTcpSock(struct slclTcpSock* sock, const char* data, size_t bytes)
+{
+    slclerr_t out;
+    if ((out = send(sock->s, data, bytes, 0))< 0)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_ERROR;
+    }
+    return out;
+}
+
+slclerr_t slclRecvTcpSock(struct slclTcpSock* sock, char* buffer, size_t bytes)
+{
+    slclerr_t out;
+    if ((out = recv(sock->s, buffer, bytes, 0)) == SOCKET_ERROR)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_ERROR;
+    }
+    return out;
+}
+
+slclerr_t slclRecvTcpSockExact(struct slclTcpSock* sock, char* buffer, size_t bytes)
 {
 
 }
 
-struct slclTcpServer* slclOpenTcpServer( const char* ip, short port );
-
-struct slclTcpSock* slclAcceptTcpServer( struct slclTcpServer* server );
-
-slclerr_t slclSendTcpSock( struct slclTcpSock* sock, const char* data, size_t bytes );
-
-slclerr_t slclRecvTcpSock( struct slclTcpSock* sock, char* buffer, size_t bytes );
-
-slclerr_t slclRecvTcpSockExact( struct slclTcpSock* sock, char* buffer, size_t bytes );
-
-slclerr_t slclCloseTcpSock( struct slclTcpSock* socket, enum slclShutdownMethod how );
+slclerr_t slclCloseTcpSock(struct slclTcpSock* socket, enum slclShutdownMethod how)
+{
+    if (shutdown(socket->s, how) == SOCKET_ERROR)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_ERROR;
+    }
+    
+    if (closesocket(socket->s) == SOCKET_ERROR)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_ERROR;
+    }
+    return 0;
+}
 
 slclerr_t slclCloseTcpServer( struct slclTcpServer* server, enum slclShutdownMethod how )
 {
-    
+    if (shutdown(server->s, how) == SOCKET_ERROR)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_ERROR;
+    }
+
+    if (closesocket(server->s) == SOCKET_ERROR)
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_ERROR;
+    }
+    return 0;
 }
 
 

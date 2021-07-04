@@ -7,8 +7,12 @@ char slclerrmsg[1024];
 
 void slclSeterr( const char* msg )
 {
-    bzero(slclerrmsg, sizeof(slclerrmsg));
+    memset(slclerrmsg, 0, sizeof(slclerrmsg));
     strcpy( slclerrmsg, msg );
+}
+char* slclGetErrorBuf()
+{
+    return slclerrmsg;
 }
 
 #ifdef __cpluscplus
@@ -16,11 +20,11 @@ SLCL_ENTERCPP
 #endif
 
 
-extern const char* slclStrerr()
+const char* slclStrerr()
 {
     return slclerrmsg;
 }
-extern void slclPerror( const char* prefix )
+void slclPerror( const char* prefix )
 {
     fprintf( stderr, "%s: %s\n", prefix, slclerrmsg );
 }

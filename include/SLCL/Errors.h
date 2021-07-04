@@ -11,6 +11,7 @@ SLCL_ENTERCPP
 extern const char* slclStrerr();
 extern void slclPerror( const char* prefix );
 
+
 #ifdef __cplusplus
 SLCL_EXITCPP
 #endif
