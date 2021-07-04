@@ -2,3 +2,9 @@
 *.a
 *.out
 .vs/*
+*.cmake
+CMakeFiles/
+CMakeCache.txt
+*.exe
+*.json
+build/

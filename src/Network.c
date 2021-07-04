@@ -259,10 +259,7 @@ struct slclSockaddr_in* slclCreateStrAddress(slclAddressFamily domain, const cha
 
 }
 
-void slclFreeAddress(struct slclSockaddr_in* addr)
-{
-    free(addr);
-}
+
 
 struct slclSock* slclAccept(struct slclSock* server)
 {
@@ -610,13 +607,16 @@ struct slclSock* slclAccept( struct slclSock* server )
     return outsock;
 
 }
+#endif
 
-
+void slclFreeAddress(struct slclSockaddr_in* addr)
+{
+    free(addr);
+}
 
 #ifdef __cpluscplus
 SLCL_EXITCPP
 #endif
 
 
-#endif
 

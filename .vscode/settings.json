@@ -19,6 +19,8 @@
         "slcl.h": "c",
         "socket.h": "c",
         "socket_type.h": "c",
-        "eventfd.h": "c"
-    }
+        "eventfd.h": "c",
+        "cstdlib": "c"
+    },
+    "cmake.configureOnOpen": true
 }
