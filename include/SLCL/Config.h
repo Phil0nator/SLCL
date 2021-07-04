@@ -38,6 +38,7 @@ typedef int slclerr_t;
 #include <stddef.h>
 
 #define SLCL_FAILED ((void*)-1)
+#define SLCL_SUCCESS (0)
 #define SLCL_ERROR  (-1)
 #define SLCL_LITTLE_ENDIAN ((1 == *(unsigned char *)&(const int){1}))
 

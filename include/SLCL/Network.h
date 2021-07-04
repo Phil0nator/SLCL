@@ -16,17 +16,12 @@ SLCL_ENTERCPP
 /**
  * A type representing an os-dependent tcp socket type. 
  */
-struct slclTcpSock;
-/**
- * A type representing an os-dependent tcp socket bound to an address,
- * and listening for connections
- */
-struct slclTcpServer;
+struct slclSock;
+struct slclSockaddr_in;
 
-/**
- * A type representing an os-dependent udp socket type
- */
-struct slclUdpSock;
+typedef int slclAddressFamily;
+typedef int slclSockProtocol;
+typedef int slclSockType;
 
 // General decls
 
@@ -38,87 +33,231 @@ typedef enum slclShutdownMethod
 } slclShutdownMethod_t;
 
 
-// TCP Functions
+extern const slclAddressFamily SLCL_AF_UNSPEC;
+extern const slclAddressFamily SLCL_AF_LOCAL;
+extern const slclAddressFamily SLCL_AF_UNIX;
+extern const slclAddressFamily SLCL_AF_FILE;
+extern const slclAddressFamily SLCL_AF_INET;
+extern const slclAddressFamily SLCL_AF_AX25;
+extern const slclAddressFamily SLCL_AF_IPX;
+extern const slclAddressFamily SLCL_AF_APPLETALK;
+extern const slclAddressFamily SLCL_AF_NETROM;
+extern const slclAddressFamily SLCL_AF_BRIDGE;
+extern const slclAddressFamily SLCL_AF_ATMPVC;
+extern const slclAddressFamily SLCL_AF_X25;
+extern const slclAddressFamily SLCL_AF_INET6;
+extern const slclAddressFamily SLCL_AF_ROSE;
+extern const slclAddressFamily SLCL_AF_DECnet;
+extern const slclAddressFamily SLCL_AF_NETBEUI;
+extern const slclAddressFamily SLCL_AF_SECURITY;
+extern const slclAddressFamily SLCL_AF_KEY;
+extern const slclAddressFamily SLCL_AF_NETLINK;
+extern const slclAddressFamily SLCL_AF_ROUTE;
+extern const slclAddressFamily SLCL_AF_PACKET;
+extern const slclAddressFamily SLCL_AF_ASH;
+extern const slclAddressFamily SLCL_AF_ECONET;
+extern const slclAddressFamily SLCL_AF_ATMSVC;
+extern const slclAddressFamily SLCL_AF_RDS;
+extern const slclAddressFamily SLCL_AF_SNA;
+extern const slclAddressFamily SLCL_AF_IRDA;
+extern const slclAddressFamily SLCL_AF_PPPOX;
+extern const slclAddressFamily SLCL_AF_WANPIPE;
+extern const slclAddressFamily SLCL_AF_LLC;
+extern const slclAddressFamily SLCL_AF_IB;
+extern const slclAddressFamily SLCL_AF_MPLS;
+extern const slclAddressFamily SLCL_AF_CAN;
+extern const slclAddressFamily SLCL_AF_TIPC;
+extern const slclAddressFamily SLCL_AF_BLUETOOTH;
+extern const slclAddressFamily SLCL_AF_IUCV;
+extern const slclAddressFamily SLCL_AF_RXRPC;
+extern const slclAddressFamily SLCL_AF_ISDN;
+extern const slclAddressFamily SLCL_AF_PHONET;
+extern const slclAddressFamily SLCL_AF_IEEE802154;
+extern const slclAddressFamily SLCL_AF_CAIF;
+extern const slclAddressFamily SLCL_AF_ALG;
+extern const slclAddressFamily SLCL_AF_NFC;
+extern const slclAddressFamily SLCL_AF_VSOCK;
+extern const slclAddressFamily SLCL_AF_KCM;
+extern const slclAddressFamily SLCL_AF_QIPCRTR;
+extern const slclAddressFamily SLCL_AF_SMC;
+extern const slclAddressFamily SLCL_AF_XDP;
+extern const slclAddressFamily SLCL_AF_MAX;
+
+extern const slclSockProtocol SLCL_PF_UNSPEC;
+extern const slclSockProtocol SLCL_PF_LOCAL;
+extern const slclSockProtocol SLCL_PF_UNIX;
+extern const slclSockProtocol SLCL_PF_FILE;
+extern const slclSockProtocol SLCL_PF_INET;
+extern const slclSockProtocol SLCL_PF_AX25;
+extern const slclSockProtocol SLCL_PF_IPX;
+extern const slclSockProtocol SLCL_PF_APPLETALK;
+extern const slclSockProtocol SLCL_PF_NETROM;
+extern const slclSockProtocol SLCL_PF_BRIDGE;
+extern const slclSockProtocol SLCL_PF_ATMPVC;
+extern const slclSockProtocol SLCL_PF_X25;
+extern const slclSockProtocol SLCL_PF_INET6;
+extern const slclSockProtocol SLCL_PF_ROSE;
+extern const slclSockProtocol SLCL_PF_DECnet;
+extern const slclSockProtocol SLCL_PF_NETBEUI;
+extern const slclSockProtocol SLCL_PF_SECURITY;
+extern const slclSockProtocol SLCL_PF_KEY;
+extern const slclSockProtocol SLCL_PF_NETLINK;
+extern const slclSockProtocol SLCL_PF_ROUTE;
+extern const slclSockProtocol SLCL_PF_PACKET;
+extern const slclSockProtocol SLCL_PF_ASH;
+extern const slclSockProtocol SLCL_PF_ECONET;
+extern const slclSockProtocol SLCL_PF_ATMSVC;
+extern const slclSockProtocol SLCL_PF_RDS;
+extern const slclSockProtocol SLCL_PF_SNA;
+extern const slclSockProtocol SLCL_PF_IRDA;
+extern const slclSockProtocol SLCL_PF_PPPOX;
+extern const slclSockProtocol SLCL_PF_WANPIPE;
+extern const slclSockProtocol SLCL_PF_LLC;
+extern const slclSockProtocol SLCL_PF_IB;
+extern const slclSockProtocol SLCL_PF_MPLS;
+extern const slclSockProtocol SLCL_PF_CAN;
+extern const slclSockProtocol SLCL_PF_TIPC;
+extern const slclSockProtocol SLCL_PF_BLUETOOTH;
+extern const slclSockProtocol SLCL_PF_IUCV;
+extern const slclSockProtocol SLCL_PF_RXRPC;
+extern const slclSockProtocol SLCL_PF_ISDN;
+extern const slclSockProtocol SLCL_PF_PHONET;
+extern const slclSockProtocol SLCL_PF_IEEE802154;
+extern const slclSockProtocol SLCL_PF_CAIF;
+extern const slclSockProtocol SLCL_PF_ALG;
+extern const slclSockProtocol SLCL_PF_NFC;
+extern const slclSockProtocol SLCL_PF_VSOCK;
+extern const slclSockProtocol SLCL_PF_KCM;
+extern const slclSockProtocol SLCL_PF_QIPCRTR;
+extern const slclSockProtocol SLCL_PF_SMC;
+extern const slclSockProtocol SLCL_PF_XDP;
+extern const slclSockProtocol SLCL_PF_MAX;
+
+extern const slclSockType SLCL_SOCK_STREAM;
+extern const slclSockType SLCL_SOCK_DGRAM;
+extern const slclSockType SLCL_SOCK_RAW;
+extern const slclSockType SLCL_SOCK_RDM;
+extern const slclSockType SLCL_SOCK_SEQPACKET;
+extern const slclSockType SLCL_SOCK_DCCP;
+extern const slclSockType SLCL_SOCK_PACKET;
+extern const slclSockType SLCL_SOCK_CLOEXEC;
+extern const slclSockType SLCL_SOCK_NONBLOCK;
+
+
+//  Functions
+
 
 /**
- * slclOpenTcpSock creates a TCP socket and initiates a connection to the 
- * given ip address and port. (the port is expected in host order).
- * @param ip a string representing the IP as #.#.#.# 
- * @param port the host port (host order)
- * @returns a slclTcpSock struct which will represent the underlying OS implimentation.
- * The resources used by this slclTcpSock will be automatically freed after a call to slclCloseTcpSock.
- */
-struct slclTcpSock* slclOpenTcpSock( const char* ip, short port );
-
-/**
- * slclOpenTcpServer creates a TCP socket and begins listening for incoming connections
- * on the given ip address and port. (the port is expected in host order).
- * @param ip a string representing the IP as #.#.#.# 
- * @param port the host port (host order)
- * @returns a slclTcpServer struct which will represent the underlying OS implimentation.
- * The resources used by this slclTcpServer will be automatically freed after a call to slclCloseTcpSock.
- */
-struct slclTcpServer* slclOpenTcpServer( const char* ip, short port );
-
-/**
- * slclAcceptTcpServer is used to accept incoming connections over a slclTcpServer struct
- * as new slclTcpSock structs.
- * @see slclTcpSock
- * @see slclTcpServer
+ * slclCreateAddress will create a new sockaddr type based on a domain, raw address, and port;
+ * ( If you are looking to make an address from a string-represented ip and port, you
+ * should use slclCreateStrAddress() ).
  * 
- * @param server the server through which to accept
- * @returns a new slclTcpSock structure after blocking until a new connection arrives.
+ * @param domain an address family for the address
+ * @param address a raw address
+ * @param port the port number ( in network order )
+ * @returns the abstracted slclSockaddr_in pointer, which can be freed with slclFreeAddress
  */
-struct slclTcpSock* slclAcceptTcpServer( struct slclTcpServer* server );
+struct slclSockaddr_in* slclCreateAddress( slclAddressFamily domain, int address, short port );
 
 /**
- * slclSendTcpSock is used to send data through a tcp socket.
+ * slclCreateStrAddress creates a slclSockaddr_in type from an ip and port;
+ * 
+ * @param domain an address family ( I.E AF_INET )
+ * @param address the ip address as: #.#.#.#
+ * @param port the port number ( in network order )
+ * @returns the abstracted slclSockaddr_in pointer, which can be freed with slclFreeAddress
+ */
+struct slclSockaddr_in* slclCreateStrAddress( slclAddressFamily domain, const char* address, short port );
+void slclFreeAddress(struct slclSockaddr_in* addr);
+
+/**
+ * slclOpenSock creates a socket object with the given parameters.
+ * @param domain the address family of the socket. E.g: AF_INET
+ * @param type socket type. E.g: SOCK_STREAM
+ * @param protocol an optional socket protocol
+ * @returns a new slclSock object, or SLCL_FAILED if an error occured. 
+ * The resources used by the returned slclSock can be freed using slclCloseSock()
+ */
+struct slclSock* slclOpenSock( slclAddressFamily domain, slclSockType type, slclSockProtocol protocol  );
+
+/**
+ * Begin a connection between an slclSock and a given slcl address.
+ * @param sock a socket to connect
+ * @param addr an address to use
+ * @returns either SLCL_SUCCESS, or SLCL_ERROR
+ */
+slclerr_t slclConnect( struct slclSock* sock, struct slclSockaddr_in* addr );
+
+/**
+ * slclAccept is used to accept incoming connections over a slclSock struct.
+ * @see slclBind
+ * @see slclListen
+ * 
+ * @param server a slclSock that is bound and listening
+ * @returns either a new slclSock connection, or SLCL_FAILED if an error occured.
+ * slclAccept will block unitl a new connection is ready.
+ */
+struct slclSock* slclAccept( struct slclSock* server );
+
+/**
+ * slclSend is used to send data through a socket.
  * @param sock the socket to send data through
  * @param data a pointer to some data to send
  * @param bytes the number of bytes to send
  * @returns the number of bytes sent, or SLCL_ERROR if an error occured.
  * @see slclStrerr
  */
-slclerr_t slclSendTcpSock( struct slclTcpSock* sock, const char* data, size_t bytes );
+slclerr_t slclSend( struct slclSock* sock, const char* data, size_t bytes );
 
 /**
- * slclRecvTcpSock is used to receive data through a given socket.
+ * slclRecv is used to receive data through a given socket.
  * @param sock the socket to receive through
  * @param buffer a buffer of size 'bytes' or greater
  * @param bytes the maximum number of bytes to receive
  * @returns the number of bytes received, or SLCL_ERROR if an error occured.
  * @see slclStrerr
  */
-slclerr_t slclRecvTcpSock( struct slclTcpSock* sock, char* buffer, size_t bytes );
+slclerr_t slclRecv( struct slclSock* sock, char* buffer, size_t bytes );
+
 
 /**
- * slclRecvTcpSock, similar to slclRecvTcpSock, is used to receive a precise
- * number of bytes through a socket.
- * slclRecvTcpSockExact will block until the given number of bytes has been received,
- * or an error occurs.
- * @param sock the socket to receive through
- * @param buffer the destination buffer of size 'bytes' or greater
- * @param bytes the precise number of bytes to wait for
- * @returns either 'bytes', or SLCL_ERROR if an error occured.
- * @see slclStrerr
+ * slclShutdown will call the os-dependent version of shutdown(2),
+ * which will base its behavior on the how argument.
+ * 
+ * slclShutdown does NOT free resources used by an slclSocket,
+ * for that @see slclCloseSock
+ * 
+ * @param socket a slclSock to shutdown
+ * @param how a slclShutdownMethod to use to shutdown the socket
+ * @returns either SLCL_SUCCESS or SLCL_ERROR
+ * 
  */
-slclerr_t slclRecvTcpSockExact( struct slclTcpSock* sock, char* buffer, size_t bytes );
+slclerr_t slclShutdown( struct slclSock* socket, enum slclShutdownMethod how );
 
 /**
- * slclCloseTcpSock will free all the resources being used by a tcp socket.
- * @param socket a slclTcpSock
- * @returns
+ * slclBind will bind an slclSock to an address as a server.
+ * @param socket a socket to bind
+ * @param addr the address to bind to
+ * @returns either SLCL_SUCCESS or SLCL_ERROR
  */
-slclerr_t slclCloseTcpSock( struct slclTcpSock* socket, enum slclShutdownMethod how );
+slclerr_t slclBind( struct slclSock* socket, struct slclSockaddr_in* addr );
 
 /**
- * slclCloseTcpSock will free all the resources being used by a tcp server. 
- * ( this does NOT include any clients that may have been created through
- *  calls to slclAcceptTcpServer )
- * @param socket a slclTcpSock
- * @returns
+ * slclListen will begin listening on a socket for incoming connetions.
+ * @param socket the socket to listen on
+ * @param backlog the number of incoming connections to accept
+ * @returns either SLCL_SUCCESS or SLCL_ERROR
  */
-slclerr_t slclCloseTcpServer( struct slclTcpServer* server, enum slclShutdownMethod how );
+slclerr_t slclListen( struct slclSock* socket, int backlog );
+
+/**
+ * slclCloseSock will close any connection that is active on socket,
+ * and free all resources used by the socket.
+ * @param socket the socket to close
+ * @warning (after a call to slclCloseSock, the given pointer becomes invalid and further
+ * dereferences are undefined behavior.)
+ */
+slclerr_t slclCloseSock( struct slclSock* socket );
 
 
 #ifdef __cplusplus
