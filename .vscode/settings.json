@@ -17,6 +17,8 @@
         "string.h": "c",
         "network.h": "c",
         "slcl.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "socket_type.h": "c",
+        "eventfd.h": "c"
     }
 }

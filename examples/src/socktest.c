@@ -9,9 +9,9 @@
 
 int main(int argc, char const *argv[])
 {
-    struct slclTcpServer* test = slclOpenTcpServer( SLCL_LOCALHOST, 5502 );
-    
-    if (test == SLCL_FAILED)
+    struct slclSock* sock = slclOpenSock( SLCL_AF_INET, SLCL_SOCK_STREAM, 0 );
+
+    if (sock == SLCL_FAILED)
     {
         slclPerror("socktest");
         exit(1);
@@ -20,18 +20,20 @@ int main(int argc, char const *argv[])
     {
         puts("ok");
     }
+    slclConnect(sock, slclCreateStrAddress( SLCL_AF_INET, "127.0.0.1", 5500 ) );
+
 
     while (1)
     {
-        struct slclTcpSock* sock;
-        if ((sock = slclAcceptTcpServer(test)) != SLCL_FAILED)
+        struct slclSock* nsock;
+        if ((nsock = slclAccept(sock)) != SLCL_FAILED)
         {
             puts("New Connection");
             while( 1 )
             {
                 char buffer[1024];
                 memset(buffer, 0, 1024);
-                slclerr_t packet = slclRecvTcpSock( sock, buffer, 1024 );
+                slclerr_t packet = slclRecv( sock, buffer, 1024 );
                 if (packet == SLCL_ERROR)
                 {
                     fputs("Connection lost.", stderr);
@@ -41,7 +43,7 @@ int main(int argc, char const *argv[])
 
                 if ( strncmp( buffer, "exit", 4 ) == 0 )
                 {
-                    slclCloseTcpSock( sock, SLCL_SHUTDOWN_ALL );
+                    slclCloseSock( sock );
                     puts("Connection closed.");
                     break;
                 }
