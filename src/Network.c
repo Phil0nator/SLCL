@@ -17,17 +17,136 @@ SLCL_ENTERCPP
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
 #pragma comment (lib, "Ws2_32.lib")
 
-typedef struct slclTcpSock
-{
-    SOCKET s;
-} slclTcpSock_t;
 
-typedef struct slclTcpServer
+// Constants
+
+const slclAddressFamily SLCL_AF_UNSPEC = AF_UNSPEC;
+const slclAddressFamily SLCL_AF_LOCAL = AF_UNIX;
+const slclAddressFamily SLCL_AF_UNIX = AF_UNIX;
+const slclAddressFamily SLCL_AF_FILE = AF_UNIX;
+const slclAddressFamily SLCL_AF_INET = AF_INET;
+const slclAddressFamily SLCL_AF_AX25 = -1;
+const slclAddressFamily SLCL_AF_IPX = AF_IPX;
+const slclAddressFamily SLCL_AF_APPLETALK = AF_APPLETALK;
+const slclAddressFamily SLCL_AF_NETROM = -1;
+const slclAddressFamily SLCL_AF_BRIDGE = -1;
+const slclAddressFamily SLCL_AF_ATMPVC = -1;
+const slclAddressFamily SLCL_AF_X25 = -1;
+const slclAddressFamily SLCL_AF_INET6 = AF_INET6;
+const slclAddressFamily SLCL_AF_ROSE = -1;
+const slclAddressFamily SLCL_AF_DECnet = AF_DECnet;
+const slclAddressFamily SLCL_AF_NETBEUI = AF_NETBIOS;
+const slclAddressFamily SLCL_AF_SECURITY = -1;
+const slclAddressFamily SLCL_AF_KEY = -1;
+const slclAddressFamily SLCL_AF_NETLINK = -1;
+const slclAddressFamily SLCL_AF_ROUTE = -1;
+const slclAddressFamily SLCL_AF_PACKET = -1;
+const slclAddressFamily SLCL_AF_ASH = -1;
+const slclAddressFamily SLCL_AF_ECONET = -1;
+const slclAddressFamily SLCL_AF_ATMSVC = -1;
+const slclAddressFamily SLCL_AF_RDS = -1;
+const slclAddressFamily SLCL_AF_SNA = AF_SNA;
+const slclAddressFamily SLCL_AF_IRDA = AF_IRDA;
+const slclAddressFamily SLCL_AF_PPPOX = -1;
+const slclAddressFamily SLCL_AF_WANPIPE = -1;
+const slclAddressFamily SLCL_AF_LLC = -1;
+const slclAddressFamily SLCL_AF_IB = -1;
+const slclAddressFamily SLCL_AF_MPLS = -1;
+const slclAddressFamily SLCL_AF_CAN = -1;
+const slclAddressFamily SLCL_AF_TIPC = -1;
+const slclAddressFamily SLCL_AF_BLUETOOTH = AF_BTH;
+const slclAddressFamily SLCL_AF_IUCV = -1;
+const slclAddressFamily SLCL_AF_RXRPC = -1;
+const slclAddressFamily SLCL_AF_ISDN = -1;
+const slclAddressFamily SLCL_AF_PHONET = -1;
+const slclAddressFamily SLCL_AF_IEEE802154 = -1;
+const slclAddressFamily SLCL_AF_CAIF = -1;
+const slclAddressFamily SLCL_AF_ALG = -1;
+const slclAddressFamily SLCL_AF_NFC = -1;
+const slclAddressFamily SLCL_AF_VSOCK = -1;
+const slclAddressFamily SLCL_AF_KCM = -1;
+const slclAddressFamily SLCL_AF_QIPCRTR = -1;
+const slclAddressFamily SLCL_AF_SMC = -1;
+const slclAddressFamily SLCL_AF_XDP = -1;
+const slclAddressFamily SLCL_AF_MAX = AF_MAX;
+
+const slclSockProtocol SLCL_PF_UNSPEC = PF_UNSPEC;
+const slclSockProtocol SLCL_PF_LOCAL = PF_UNIX;
+const slclSockProtocol SLCL_PF_UNIX = PF_UNIX;
+const slclSockProtocol SLCL_PF_FILE = PF_UNIX; 
+const slclSockProtocol SLCL_PF_INET = PF_INET;
+const slclSockProtocol SLCL_PF_AX25 = -1;
+const slclSockProtocol SLCL_PF_IPX = PF_IPX;
+const slclSockProtocol SLCL_PF_APPLETALK = PF_APPLETALK;
+const slclSockProtocol SLCL_PF_NETROM = -1;
+const slclSockProtocol SLCL_PF_BRIDGE = -1;
+const slclSockProtocol SLCL_PF_ATMPVC = -1;
+const slclSockProtocol SLCL_PF_X25 = -1;
+const slclSockProtocol SLCL_PF_INET6 = PF_INET6;
+const slclSockProtocol SLCL_PF_ROSE = -1;
+const slclSockProtocol SLCL_PF_DECnet = PF_DECnet;
+const slclSockProtocol SLCL_PF_NETBEUI = -1;
+const slclSockProtocol SLCL_PF_SECURITY = -1;
+const slclSockProtocol SLCL_PF_KEY = -1;
+const slclSockProtocol SLCL_PF_NETLINK = -1;
+const slclSockProtocol SLCL_PF_ROUTE = -1;
+const slclSockProtocol SLCL_PF_PACKET = -1;
+const slclSockProtocol SLCL_PF_ASH = -1;
+const slclSockProtocol SLCL_PF_ECONET = -1;
+const slclSockProtocol SLCL_PF_ATMSVC = -1;
+const slclSockProtocol SLCL_PF_RDS = -1;
+const slclSockProtocol SLCL_PF_SNA = PF_SNA;
+const slclSockProtocol SLCL_PF_IRDA = -1;
+const slclSockProtocol SLCL_PF_PPPOX = -1;
+const slclSockProtocol SLCL_PF_WANPIPE = -1;
+const slclSockProtocol SLCL_PF_LLC = -1;
+const slclSockProtocol SLCL_PF_IB = -1;
+const slclSockProtocol SLCL_PF_MPLS = -1;
+const slclSockProtocol SLCL_PF_CAN = -1;
+const slclSockProtocol SLCL_PF_TIPC = -1;
+const slclSockProtocol SLCL_PF_BLUETOOTH = 3; // BTHPROTO_RFCOMM
+const slclSockProtocol SLCL_PF_IUCV = -1;
+const slclSockProtocol SLCL_PF_RXRPC = -1;
+const slclSockProtocol SLCL_PF_ISDN = -1;
+const slclSockProtocol SLCL_PF_PHONET = -1;
+const slclSockProtocol SLCL_PF_IEEE802154 = -1;
+const slclSockProtocol SLCL_PF_CAIF = -1;
+const slclSockProtocol SLCL_PF_ALG = -1;
+const slclSockProtocol SLCL_PF_NFC = -1;
+const slclSockProtocol SLCL_PF_VSOCK = -1;
+const slclSockProtocol SLCL_PF_KCM = -1;
+const slclSockProtocol SLCL_PF_QIPCRTR = -1;
+const slclSockProtocol SLCL_PF_SMC = -1;
+const slclSockProtocol SLCL_PF_XDP = -1;
+const slclSockProtocol SLCL_PF_MAX = PF_MAX;
+
+const slclSockType SLCL_SOCK_STREAM = SOCK_STREAM;
+const slclSockType SLCL_SOCK_DGRAM = SOCK_DGRAM;
+const slclSockType SLCL_SOCK_RAW = SOCK_RAW;
+const slclSockType SLCL_SOCK_RDM = SOCK_RDM;
+const slclSockType SLCL_SOCK_SEQPACKET = SOCK_SEQPACKET;
+const slclSockType SLCL_SOCK_DCCP = -1;
+const slclSockType SLCL_SOCK_PACKET = -1;
+const slclSockType SLCL_SOCK_CLOEXEC = -1;
+const slclSockType SLCL_SOCK_NONBLOCK = -1;
+
+
+
+
+
+typedef struct slclSock
 {
     SOCKET s;
-} slclTcpServer_t;
+} slclSock_t;
+
+typedef struct slclSockaddr_in
+{
+    struct sockaddr_in addr;
+} slclSockaddr_in_t;
+
 
 slclerr_t slclInitWinsock()
 {
@@ -65,106 +184,102 @@ slclerr_t slclConstructBaseWindowsSockaddr(struct sockaddr_in* addr, const char*
     return 0;
 }
 
-SOCKET slclConstructBaseWindowsTcp()
+
+struct slclSock* slclOpenSock(slclAddressFamily domain, slclSockType type, slclSockProtocol prot )
 {
     slclInitWinsock();
     SOCKET tmp;
-    if ((tmp = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
-    {
+    if ((tmp = socket(domain, type, prot)) == INVALID_SOCKET)
+    { 
         slclSetWsaErrorMsg();
-        return INVALID_SOCKET;
-    }
-    
-
-    return tmp;
-}
-
-
-struct slclTcpSock* slclOpenTcpSock( const char* ip, short port )
-{
-    
-    SOCKET tmp = slclConstructBaseWindowsTcp(ip, port);
-    if (tmp == INVALID_SOCKET)
-    {
         return SLCL_FAILED;
     }
-
-    struct sockaddr_in addr;
-    slclerr_t err = slclConstructBaseWindowsSockaddr(&addr, ip, port);
-
-    if (err == SLCL_ERROR)
-    {
-        return SLCL_FAILED;
-    }
-
-    if ((connect(tmp, (struct sockaddr*)&addr, sizeof(addr)) < 0))
-    {
-        slclSetWsaErrorMsg();
-        return INVALID_SOCKET;
-    }
-
-    struct slclTcpSock* out = malloc(sizeof(slclTcpSock_t));
+    struct slclSock* out = malloc(sizeof(slclSock_t));
     if (out == 0) {
         slclSeterr("Out of memory.");
         return SLCL_FAILED;
     }
     out->s = tmp;
     return out;
-
+}
+slclerr_t slclConnect(struct slclSock* sock, struct slclSockaddr_in* addr)
+{
+    if ((connect(sock->s, (struct sockaddr*)(&addr->addr), sizeof(addr->addr)) < 0))
+    {
+        slclSetWsaErrorMsg();
+        return SLCL_ERROR;
+    }
+    return SLCL_SUCCESS;
 }
 
-struct slclTcpServer* slclOpenTcpServer(const char* ip, short port)
+
+slclerr_t slclBind(struct slclSock* socket, struct slclSockaddr_in* addr)
 {
-    slclInitWinsock();
-    SOCKET tmp = slclConstructBaseWindowsTcp();
-    if (tmp == INVALID_SOCKET)
-    {
-        return SLCL_FAILED;
-    }
-    struct sockaddr_in addr;
-    slclerr_t err = slclConstructBaseWindowsSockaddr(&addr, ip, port);
-    if (err == SLCL_ERROR)
-    {
-        return SLCL_FAILED;
-    }
-    
-    if (bind(tmp, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
+    if (bind(socket->s, (struct sockaddr*)(&addr->addr), sizeof(addr->addr)) == SOCKET_ERROR)
     {
         slclSetWsaErrorMsg();
         return SLCL_FAILED;
     }
-
-    if ((listen(tmp, 4096)) == SOCKET_ERROR)
+    return SLCL_SUCCESS;
+}
+slclerr_t slclListen(struct slclSock* socket, int backlog)
+{
+    if ((listen(socket->s, backlog)) == SOCKET_ERROR)
     {
         slclSetWsaErrorMsg();
         return SLCL_FAILED;
     }
+    return SLCL_SUCCESS;
+}
 
-    struct slclTcpServer* out = malloc(sizeof(slclTcpServer_t));
+
+struct slclSockaddr_in* slclCreateAddress(slclAddressFamily domain, int address, short port)
+{
+    slclSockaddr_in_t* out = malloc(sizeof(struct slclSockaddr_in));
     if (out == 0)
     {
         slclSeterr("Out of memory.");
         return SLCL_FAILED;
     }
-
-    out->s = tmp;
+    out->addr.sin_family = domain;
+    out->addr.sin_port = port;
+    out->addr.sin_addr.S_un.S_addr = address;
+    return out;
+}
+struct slclSockaddr_in* slclCreateStrAddress(slclAddressFamily domain, const char* address, short port)
+{
+    slclSockaddr_in_t* out = slclCreateAddress(domain, 0, port);
+    if (out == SLCL_FAILED) return out;
+    slclerr_t err = slclConstructBaseWindowsSockaddr(&out->addr, address, port);
+    if (err == SLCL_ERROR)
+    {
+        return SLCL_FAILED;
+    }
     return out;
 
 }
 
-struct slclTcpSock* slclAcceptTcpServer(struct slclTcpServer* server)
+void slclFreeAddress(struct slclSockaddr_in* addr)
+{
+    free(addr);
+}
+
+struct slclSock* slclAccept(struct slclSock* server)
 {
 
     SOCKET newsock;
     struct sockaddr_in client;
-    newsock = accept(server->s, NULL, NULL);
+    size_t size = sizeof(client);
+    newsock = accept(server->s, (struct sockaddr*) &client, (int*)(&size));
     if (newsock == INVALID_SOCKET)
     {
         slclSetWsaErrorMsg();
         return SLCL_FAILED;
     }
 
-    struct slclTcpSock* out = malloc(sizeof(struct slclTcpSock));
+    
+
+    struct slclSock* out = malloc(sizeof(struct slclSock));
     if (out == 0)
     {
         slclSeterr("Out of memory.");
@@ -175,7 +290,7 @@ struct slclTcpSock* slclAcceptTcpServer(struct slclTcpServer* server)
 
 }
 
-slclerr_t slclSendTcpSock(struct slclTcpSock* sock, const char* data, size_t bytes)
+slclerr_t slclSend(struct slclSock* sock, const char* data, size_t bytes)
 {
     slclerr_t out;
     if ((out = send(sock->s, data, bytes, 0))< 0)
@@ -186,7 +301,7 @@ slclerr_t slclSendTcpSock(struct slclTcpSock* sock, const char* data, size_t byt
     return out;
 }
 
-slclerr_t slclRecvTcpSock(struct slclTcpSock* sock, char* buffer, size_t bytes)
+slclerr_t slclRecv(struct slclSock* sock, char* buffer, size_t bytes)
 {
     slclerr_t out;
     if ((out = recv(sock->s, buffer, bytes, 0)) == SOCKET_ERROR)
@@ -197,41 +312,24 @@ slclerr_t slclRecvTcpSock(struct slclTcpSock* sock, char* buffer, size_t bytes)
     return out;
 }
 
-slclerr_t slclRecvTcpSockExact(struct slclTcpSock* sock, char* buffer, size_t bytes)
-{
-
-}
-
-slclerr_t slclCloseTcpSock(struct slclTcpSock* socket, enum slclShutdownMethod how)
+slclerr_t slclShutdown(struct slclSock* socket, enum slclShutdownMethod how)
 {
     if (shutdown(socket->s, how) == SOCKET_ERROR)
     {
         slclSetWsaErrorMsg();
         return SLCL_ERROR;
     }
-    
+    return SLCL_SUCCESS;
+}
+
+slclerr_t slclCloseSock(struct slclSock* socket)
+{   
     if (closesocket(socket->s) == SOCKET_ERROR)
     {
         slclSetWsaErrorMsg();
         return SLCL_ERROR;
     }
-    return 0;
-}
-
-slclerr_t slclCloseTcpServer( struct slclTcpServer* server, enum slclShutdownMethod how )
-{
-    if (shutdown(server->s, how) == SOCKET_ERROR)
-    {
-        slclSetWsaErrorMsg();
-        return SLCL_ERROR;
-    }
-
-    if (closesocket(server->s) == SOCKET_ERROR)
-    {
-        slclSetWsaErrorMsg();
-        return SLCL_ERROR;
-    }
-    return 0;
+    return SLCL_SUCCESS;
 }
 
 

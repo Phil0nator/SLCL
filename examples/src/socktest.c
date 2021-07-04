@@ -20,8 +20,24 @@ int main(int argc, char const *argv[])
     {
         puts("ok");
     }
-    slclConnect(sock, slclCreateStrAddress( SLCL_AF_INET, "127.0.0.1", 5500 ) );
+    struct slclSockaddr_in* addr = slclCreateStrAddress(SLCL_AF_INET, "127.0.0.1", 5500);
 
+    if (addr == SLCL_FAILED)
+    {
+        slclPerror("socktest: addr");
+        exit(1);
+    }
+    if (slclBind(sock, addr) == SLCL_ERROR)
+    {
+        slclPerror("socktest: bind");
+        exit(1);
+    }
+    if (slclListen(sock, 4096) == SLCL_ERROR)
+    {
+        slclPerror("socktest: listen");
+        exit(1);
+    }
+    slclFreeAddress(addr);
 
     while (1)
     {
@@ -33,17 +49,18 @@ int main(int argc, char const *argv[])
             {
                 char buffer[1024];
                 memset(buffer, 0, 1024);
-                slclerr_t packet = slclRecv( sock, buffer, 1024 );
+                slclerr_t packet = slclRecv( nsock, buffer, 1024 );
                 if (packet == SLCL_ERROR)
                 {
-                    fputs("Connection lost.", stderr);
+                    slclPerror("socktest: recv");
+                    slclCloseSock(nsock);
                     break;
                 }
                 fwrite( buffer, packet, 1, stdout );
 
                 if ( strncmp( buffer, "exit", 4 ) == 0 )
                 {
-                    slclCloseSock( sock );
+                    slclCloseSock( nsock );
                     puts("Connection closed.");
                     break;
                 }
@@ -53,6 +70,7 @@ int main(int argc, char const *argv[])
         else
         {
             slclPerror("socktest");
+            slclCloseSock(nsock);
             exit(1);
         }
     }

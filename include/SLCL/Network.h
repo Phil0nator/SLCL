@@ -145,9 +145,9 @@ extern const slclSockType SLCL_SOCK_NONBLOCK;
 
 
 //  Functions
-
 struct slclSockaddr_in* slclCreateAddress( slclAddressFamily domain, int address, short port );
 struct slclSockaddr_in* slclCreateStrAddress( slclAddressFamily domain, const char* address, short port );
+void slclFreeAddress(struct slclSockaddr_in* addr);
 
 /**
  * slclOpenTcpSock creates a TCP socket and initiates a connection to the 
