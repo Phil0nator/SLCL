@@ -145,35 +145,62 @@ extern const slclSockType SLCL_SOCK_NONBLOCK;
 
 
 //  Functions
+
+
+/**
+ * slclCreateAddress will create a new sockaddr type based on a domain, raw address, and port;
+ * ( If you are looking to make an address from a string-represented ip and port, you
+ * should use slclCreateStrAddress() ).
+ * 
+ * @param domain an address family for the address
+ * @param address a raw address
+ * @param port the port number ( in network order )
+ * @returns the abstracted slclSockaddr_in pointer, which can be freed with slclFreeAddress
+ */
 struct slclSockaddr_in* slclCreateAddress( slclAddressFamily domain, int address, short port );
+
+/**
+ * slclCreateStrAddress creates a slclSockaddr_in type from an ip and port;
+ * 
+ * @param domain an address family ( I.E AF_INET )
+ * @param address the ip address as: #.#.#.#
+ * @param port the port number ( in network order )
+ * @returns the abstracted slclSockaddr_in pointer, which can be freed with slclFreeAddress
+ */
 struct slclSockaddr_in* slclCreateStrAddress( slclAddressFamily domain, const char* address, short port );
 void slclFreeAddress(struct slclSockaddr_in* addr);
 
 /**
- * slclOpenTcpSock creates a TCP socket and initiates a connection to the 
- * given ip address and port. (the port is expected in host order).
- * @param ip a string representing the IP as #.#.#.# 
- * @param port the host port (host order)
- * @returns a slclTcpSock struct which will represent the underlying OS implimentation.
- * The resources used by this slclTcpSock will be automatically freed after a call to slclCloseTcpSock.
+ * slclOpenSock creates a socket object with the given parameters.
+ * @param domain the address family of the socket. E.g: AF_INET
+ * @param type socket type. E.g: SOCK_STREAM
+ * @param protocol an optional socket protocol
+ * @returns a new slclSock object, or SLCL_FAILED if an error occured. 
+ * The resources used by the returned slclSock can be freed using slclCloseSock()
  */
 struct slclSock* slclOpenSock( slclAddressFamily domain, slclSockType type, slclSockProtocol protocol  );
 
+/**
+ * Begin a connection between an slclSock and a given slcl address.
+ * @param sock a socket to connect
+ * @param addr an address to use
+ * @returns either SLCL_SUCCESS, or SLCL_ERROR
+ */
 slclerr_t slclConnect( struct slclSock* sock, struct slclSockaddr_in* addr );
 
 /**
- * slclAcceptTcpServer is used to accept incoming connections over a slclTcpServer struct
- * as new slclTcpSock structs.
- * @see slclTcpSock
- * @see slclTcpServer
+ * slclAccept is used to accept incoming connections over a slclSock struct.
+ * @see slclBind
+ * @see slclListen
  * 
- * @param server the server through which to accept
- * @returns a new slclTcpSock structure after blocking until a new connection arrives.
+ * @param server a slclSock that is bound and listening
+ * @returns either a new slclSock connection, or SLCL_FAILED if an error occured.
+ * slclAccept will block unitl a new connection is ready.
  */
 struct slclSock* slclAccept( struct slclSock* server );
 
 /**
- * slclSendTcpSock is used to send data through a tcp socket.
+ * slclSend is used to send data through a socket.
  * @param sock the socket to send data through
  * @param data a pointer to some data to send
  * @param bytes the number of bytes to send
@@ -183,7 +210,7 @@ struct slclSock* slclAccept( struct slclSock* server );
 slclerr_t slclSend( struct slclSock* sock, const char* data, size_t bytes );
 
 /**
- * slclRecvTcpSock is used to receive data through a given socket.
+ * slclRecv is used to receive data through a given socket.
  * @param sock the socket to receive through
  * @param buffer a buffer of size 'bytes' or greater
  * @param bytes the maximum number of bytes to receive
@@ -194,16 +221,42 @@ slclerr_t slclRecv( struct slclSock* sock, char* buffer, size_t bytes );
 
 
 /**
- * slclCloseTcpSock will free all the resources being used by a tcp socket.
- * @param socket a slclTcpSock
- * @returns
+ * slclShutdown will call the os-dependent version of shutdown(2),
+ * which will base its behavior on the how argument.
+ * 
+ * slclShutdown does NOT free resources used by an slclSocket,
+ * for that @see slclCloseSock
+ * 
+ * @param socket a slclSock to shutdown
+ * @param how a slclShutdownMethod to use to shutdown the socket
+ * @returns either SLCL_SUCCESS or SLCL_ERROR
+ * 
  */
 slclerr_t slclShutdown( struct slclSock* socket, enum slclShutdownMethod how );
 
+/**
+ * slclBind will bind an slclSock to an address as a server.
+ * @param socket a socket to bind
+ * @param addr the address to bind to
+ * @returns either SLCL_SUCCESS or SLCL_ERROR
+ */
 slclerr_t slclBind( struct slclSock* socket, struct slclSockaddr_in* addr );
 
+/**
+ * slclListen will begin listening on a socket for incoming connetions.
+ * @param socket the socket to listen on
+ * @param backlog the number of incoming connections to accept
+ * @returns either SLCL_SUCCESS or SLCL_ERROR
+ */
 slclerr_t slclListen( struct slclSock* socket, int backlog );
 
+/**
+ * slclCloseSock will close any connection that is active on socket,
+ * and free all resources used by the socket.
+ * @param socket the socket to close
+ * @warning (after a call to slclCloseSock, the given pointer becomes invalid and further
+ * dereferences are undefined behavior.)
+ */
 slclerr_t slclCloseSock( struct slclSock* socket );
 
 
