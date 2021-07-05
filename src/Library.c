@@ -60,6 +60,41 @@ slclerr_t slclFreeLibrary(struct slclLibrary* handle)
 
 
 #elif defined(SLCL_TARGET_UNIXBASED)
+#include <unistd.h>
+#include <dlfcn.h>
+
+
+
+
+extern struct slclLibrary* slclLoadLibrary(const char* filepath)
+{
+	struct slclLibrary* out;
+	if ( out = (struct slclLibrary*) dlopen( filepath, RTLD_LAZY ) == NULL)
+	{
+		slclSeterr( dlerror() );
+		return SLCL_FAILED;
+	}
+	return out;
+}
+extern void* slclGetSymbol(struct slclLibrary* handle, const char* symbol)
+{
+	void* outfn;
+	if ((outfn = dlsym( (void*) handle, symbol)) == NULL )
+	{
+		slclSeterr( dlerror() );
+		return SLCL_FAILED;
+	}
+	return outfn;
+}
+extern slclerr_t slclFreeLibrary(struct slclLibrary* handle)
+{
+	if (dlclose(handle) == -1)
+	{
+		slclSeterr( dlerror() );
+		return SLCL_ERROR;
+	}
+	return SLCL_SUCCESS;
+}
 
 
 
