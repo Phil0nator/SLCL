@@ -20,7 +20,8 @@
         "socket.h": "c",
         "socket_type.h": "c",
         "eventfd.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "stdnoreturn.h": "c"
     },
     "cmake.configureOnOpen": true
 }

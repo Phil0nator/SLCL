@@ -69,7 +69,7 @@ slclerr_t slclFreeLibrary(struct slclLibrary* handle)
 extern struct slclLibrary* slclLoadLibrary(const char* filepath)
 {
 	struct slclLibrary* out;
-	if ( out = (struct slclLibrary*) dlopen( filepath, RTLD_LAZY ) == NULL)
+	if ( (out = (struct slclLibrary*) dlopen( filepath, RTLD_LAZY )) == NULL)
 	{
 		slclSeterr( dlerror() );
 		return SLCL_FAILED;
