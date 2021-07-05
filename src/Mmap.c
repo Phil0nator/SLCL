@@ -34,7 +34,7 @@ slclmmap slclMmapFile(slclmmap ptr, size_t size, slclMapProt prot, FILE* file)
 {
     HANDLE h;
     void* out;
-    if ((h = CreateFileMapping(_get_osfhandle(_fileno(file)), NULL, prot, 0, (int) size, "")) == NULL)
+    if ((h = CreateFileMapping((HANDLE)_get_osfhandle(_fileno(file)), 0, prot, 0, (int) size, "")) == NULL)
     {
         slclSetLastWinErr();
         return SLCL_FAILED;
@@ -106,13 +106,13 @@ slclerr_t slclFtruncate( FILE* file, size_t newsize )
 {
     size_t currpos = ftell(file);
     fseek(file, newsize, SEEK_SET);
-    if ( SetEndOfFile( _get_osfhandle( _fileno(file) ) ) == 0 )
+    if ( SetEndOfFile( (HANDLE)_get_osfhandle( _fileno(file) ) ) == 0 )
     {
-        fseek(file, currpos);
+        fseek(file, currpos, SEEK_SET);
         slclSetLastWinErr();
         return SLCL_ERROR;
     }
-    fseek(file, currpos);
+    fseek(file, currpos, SEEK_SET);
     return SLCL_SUCCESS;
 }
 
