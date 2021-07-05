@@ -14,7 +14,7 @@ SLCL_ENTERCPP
 // Opaque types:
 
 /**
- * A type representing an os-dependent tcp socket type. 
+ * A type representing an os-dependent socket type. 
  */
 struct slclSock;
 struct slclSockaddr_in;
@@ -22,6 +22,8 @@ struct slclSockaddr_in;
 typedef int slclAddressFamily;
 typedef int slclSockProtocol;
 typedef int slclSockType;
+typedef int slclSockopt;
+typedef int slclSockoptLevel;
 
 // General decls
 
@@ -143,6 +145,28 @@ extern const slclSockType SLCL_SOCK_PACKET;
 extern const slclSockType SLCL_SOCK_CLOEXEC;
 extern const slclSockType SLCL_SOCK_NONBLOCK;
 
+extern const slclSockoptLevel SLCL_SOL_IPPROTO_IP;
+extern const slclSockoptLevel SLCL_SOL_IPPROTO_IPV6;
+extern const slclSockoptLevel SLCL_SOL_IPPROTO_ICMP;
+extern const slclSockoptLevel SLCL_SOL_IPPROTO_RAW;
+extern const slclSockoptLevel SLCL_SOL_IPPROTO_TCP;
+extern const slclSockoptLevel SLCL_SOL_IPPROTO_UDP;
+extern const slclSockoptLevel SLCL_SOL_SOCKET;
+
+extern const slclSockopt SLCL_SO_DEBUG;
+extern const slclSockopt SLCL_SO_BROADCAST;
+extern const slclSockopt SLCL_SO_REUSEADDR;
+extern const slclSockopt SLCL_SO_KEEPALIVE;
+extern const slclSockopt SLCL_SO_LINGER;
+extern const slclSockopt SLCL_SO_OOBINLINE;
+extern const slclSockopt SLCL_SO_SNDBUF;
+extern const slclSockopt SLCL_SO_RCVBUF;
+extern const slclSockopt SLCL_SO_DONTROUTE;
+extern const slclSockopt SLCL_SO_RCVLOWAT;
+extern const slclSockopt SLCL_SO_RCVTIMEO;
+extern const slclSockopt SLCL_SO_SNDLOWAT;
+extern const slclSockopt SLCL_SO_SNDTIMEO;
+
 
 //  Functions
 
@@ -259,6 +283,21 @@ slclerr_t slclListen( struct slclSock* socket, int backlog );
  */
 slclerr_t slclCloseSock( struct slclSock* socket );
 
+/**
+ * slclSetSockOpt is an abstraction for the standard setsockopt() function.
+ * @param socket the socket to apply the new information to
+ * @param level level of application ( e.g SLCL_SOL_SOCKET )
+ * @param option_name the sockopt
+ * @param option_value the value for the requested option, if applicable
+ * @param option_len the size of the memory given in option_value
+ * @return either SLCL_SUCCESS or SLCL_ERROR
+ */
+slclerr_t slclSetSockopt( 
+    struct slclSock* socket, 
+    slclSockoptLevel level, 
+    slclSockopt option_name, 
+    const void* option_value, 
+    size_t option_len );
 
 #ifdef __cplusplus
 SLCL_EXITCPP

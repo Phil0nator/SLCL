@@ -133,7 +133,27 @@ const slclSockType SLCL_SOCK_PACKET = -1;
 const slclSockType SLCL_SOCK_CLOEXEC = -1;
 const slclSockType SLCL_SOCK_NONBLOCK = -1;
 
+const slclSockoptLevel SLCL_SOL_IPPROTO_IP = IPPROTO_IP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_IPV6 = IPPROTO_IPV6;
+const slclSockoptLevel SLCL_SOL_IPPROTO_ICMP = IPPROTO_ICMP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_RAW = IPPROTO_RAW;
+const slclSockoptLevel SLCL_SOL_IPPROTO_TCP = IPPROTO_TCP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_UDP = IPPROTO_UDP;
+const slclSockoptLevel SLCL_SOL_SOCKET = SOL_SOCKET;
 
+const slclSockopt SLCL_SO_DEBUG     = SO_DEBUG;
+const slclSockopt SLCL_SO_BROADCAST = SO_BROADCAST;
+const slclSockopt SLCL_SO_REUSEADDR = SO_REUSEADDR;
+const slclSockopt SLCL_SO_KEEPALIVE = SO_KEEPALIVE;
+const slclSockopt SLCL_SO_LINGER = SO_LINGER;
+const slclSockopt SLCL_SO_OOBINLINE = SO_OOBINLINE;
+const slclSockopt SLCL_SO_SNDBUF = SO_SNDBUF;
+const slclSockopt SLCL_SO_RCVBUF = SO_RCVBUF;
+const slclSockopt SLCL_SO_DONTROUTE = SO_DONTROUTE;
+const slclSockopt SLCL_SO_RCVLOWAT = SO_RCVLOWAT;
+const slclSockopt SLCL_SO_RCVTIMEO = SO_RCVTIMEO;
+const slclSockopt SLCL_SO_SNDLOWAT = SO_SNDLOWAT;
+const slclSockopt SLCL_SO_SNDTIMEO = SO_SNDTIMEO;
 
 
 
@@ -329,6 +349,21 @@ slclerr_t slclCloseSock(struct slclSock* socket)
     return SLCL_SUCCESS;
 }
 
+slclerr_t slclSetSockopt( 
+    struct slclSock* socket, 
+    slclSockoptLevel level, 
+    slclSockopt option_name, 
+    const void* option_value, 
+    size_t option_len )
+    {
+        if (( setsockopt( socket->s, level, option_name, option_value, option_len ) ) == SOCKET_ERROR)
+        {
+            slclSetWsaErrorMsg();
+            return SLCL_ERROR;
+        }
+        return SLCL_SUCCESS;
+    }
+
 
 #elif defined(SLCL_TARGET_UNIXBASED)
 // Linux declarations
@@ -450,6 +485,28 @@ const slclSockType SLCL_SOCK_PACKET = SOCK_PACKET;
 const slclSockType SLCL_SOCK_CLOEXEC = SOCK_CLOEXEC;
 const slclSockType SLCL_SOCK_NONBLOCK = SOCK_NONBLOCK;
 
+const slclSockoptLevel SLCL_SOL_IPPROTO_IP = IPPROTO_IP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_IPV6 = IPPROTO_IPV6;
+const slclSockoptLevel SLCL_SOL_IPPROTO_ICMP = IPPROTO_ICMP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_RAW = IPPROTO_RAW;
+const slclSockoptLevel SLCL_SOL_IPPROTO_TCP = IPPROTO_TCP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_UDP = IPPROTO_UDP;
+const slclSockoptLevel SLCL_SOL_SOCKET = SOL_SOCKET;
+
+
+const slclSockopt SLCL_SO_DEBUG     = SO_DEBUG;
+const slclSockopt SLCL_SO_BROADCAST = SO_BROADCAST;
+const slclSockopt SLCL_SO_REUSEADDR = SO_REUSEADDR;
+const slclSockopt SLCL_SO_KEEPALIVE = SO_KEEPALIVE;
+const slclSockopt SLCL_SO_LINGER = SO_LINGER;
+const slclSockopt SLCL_SO_OOBINLINE = SO_OOBINLINE;
+const slclSockopt SLCL_SO_SNDBUF = SO_SNDBUF;
+const slclSockopt SLCL_SO_RCVBUF = SO_RCVBUF;
+const slclSockopt SLCL_SO_DONTROUTE = SO_DONTROUTE;
+const slclSockopt SLCL_SO_RCVLOWAT = SO_RCVLOWAT;
+const slclSockopt SLCL_SO_RCVTIMEO = SO_RCVTIMEO;
+const slclSockopt SLCL_SO_SNDLOWAT = SO_SNDLOWAT;
+const slclSockopt SLCL_SO_SNDTIMEO = SO_SNDTIMEO;
 
 typedef int fd_t;
 
@@ -607,6 +664,23 @@ struct slclSock* slclAccept( struct slclSock* server )
     return outsock;
 
 }
+
+
+slclerr_t slclSetSockopt( 
+    struct slclSock* socket, 
+    slclSockoptLevel level, 
+    slclSockopt option_name, 
+    const void* option_value, 
+    size_t option_len )
+    {
+        if ( setsockopt( socket->fd, level, option_name, option_value, option_len ) == -1 )
+        {
+            slclSeterr( strerror( errno ) );
+            return SLCL_ERROR;
+        }
+        return SLCL_SUCCESS;
+    }
+
 #endif
 
 void slclFreeAddress(struct slclSockaddr_in* addr)
