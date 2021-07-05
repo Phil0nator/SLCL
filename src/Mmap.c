@@ -84,6 +84,15 @@ slclerr_t slclMunmapFile(slclmmap ptr, size_t size)
     }
     return SLCL_SUCCESS;
 }
+slclerr_t slclMsync( slclmmap ptr, size_t size )
+{
+    if ( FlushViewOfFile( ptr, size ) == 0 )
+    {
+        slclSetLastWinErr();
+        return SLCL_ERROR;
+    }
+    return SLCL_SUCCESS;
+}
 slclerr_t slclMprotect(slclmmap ptr, size_t size, slclMapProt protection)
 {
     if ((VirtualProtect(ptr, size, protection, 0)) == 0)
@@ -93,11 +102,24 @@ slclerr_t slclMprotect(slclmmap ptr, size_t size, slclMapProt protection)
     }
     return SLCL_SUCCESS;
 }
+slclerr_t slclFtruncate( FILE* file, size_t newsize )
+{
+    size_t currpos = ftell(file);
+    fseek(file, newsize, SEEK_SET);
+    if ( SetEndOfFile( _get_osfhandle( _fileno(file) ) ) == 0 )
+    {
+        fseek(file, currpos);
+        slclSetLastWinErr();
+        return SLCL_ERROR;
+    }
+    fseek(file, currpos);
+    return SLCL_SUCCESS;
+}
 
 
 #elif defined(SLCL_TARGET_UNIXBASED)
 #include <sys/mman.h>
-
+#include <unistd.h>
 const slclMapProt SLCL_MAP_READONLY = PROT_READ;
 const slclMapProt SLCL_MAP_READWRITE = PROT_READ | PROT_WRITE;
 const slclMapProt SLCL_MAP_EXEC = PROT_EXEC;
@@ -117,15 +139,27 @@ slclmmap slclMmap( slclmmap ptr, size_t size, slclMapProt prot )
 slclmmap slclMmapFile( slclmmap ptr, size_t size, slclMapProt prot, FILE* file )
 {
     void * out;
-    if ((out = mmap( ptr, size, prot, MAP_ANON | MAP_PRIVATE, fileno(file), 0 )) == MAP_FAILED)
+    if ((out = mmap( ptr, size, prot, MAP_SHARED, fileno(file), 0 )) == MAP_FAILED)
     {
         slclSeterr( strerror( errno ) );
         return SLCL_FAILED;
     }
     return out;
 }
+
+slclerr_t slclMsync( slclmmap ptr, size_t size )
+{
+    if (msync( ptr, size, MS_SYNC ) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    return SLCL_SUCCESS;
+}
+
 slclerr_t slclMunmap( slclmmap ptr, size_t size )
 {
+    
     if (munmap( ptr, size ) == -1)
     {
         slclSeterr( strerror( errno ) );
@@ -145,6 +179,16 @@ slclerr_t slclMunmapFile(slclmmap ptr, size_t size)
 slclerr_t slclMprotect( slclmmap ptr, size_t size, slclMapProt protection )
 {
     if (mprotect( ptr, size, protection ) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    return SLCL_SUCCESS;
+}
+
+slclerr_t slclFtruncate( FILE* file, size_t newsize )
+{
+    if (ftruncate( fileno(file), newsize ) == -1 )
     {
         slclSeterr( strerror( errno ) );
         return SLCL_ERROR;

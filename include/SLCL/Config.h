@@ -37,9 +37,25 @@
 typedef int slclerr_t;
 #include <stddef.h>
 
+/**
+ * The value returned to indicate an error in a function
+ * that would normally return a pointer.
+ */
 #define SLCL_FAILED ((void*)-1)
+/**
+ * The value returned to indicate success in a function
+ * that would normally have no return value, but might
+ * error.
+ */
 #define SLCL_SUCCESS (0)
+/**
+ * The value returned to indicate an error in a function
+ * that does not return a pointer.
+ */
 #define SLCL_ERROR  (-1)
+
+// determine if the system uses little endian.
+// e.g: if (SLCL_LITTLE_ENDIAN) ... else ...
 #define SLCL_LITTLE_ENDIAN ((1 == *(unsigned char *)&(const int){1}))
 
 
