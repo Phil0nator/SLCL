@@ -26,6 +26,10 @@
 #   define SLCL_TARGET_BSD
 #   define SLCL_TARGET_UNIXBASED
 #   define SLCL_OSNAME "BSD"
+#elif defined( __sun ) || defined( sun )
+#   define SLCL_TARGET_SOLARIS
+#   define SLCL_TARGET_UNIXBASED
+#   define SLCL_OSNAME "Solaris"
 #else
 #   define SLCL_TARGET_UNKWN
 #   define SLCL_OSNAME "Unkown"
