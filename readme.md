@@ -12,7 +12,7 @@ int sock = socket(AF_INET, SOCK_STREAM, 0);
 ### Cross platform SLCL
 ```C
 #include "SLCL/Network.h"
-struct slclSock* sock slclOpenSock( SLCL_AF_INET, SLCL_SOCK_STREAM, 0 );
+struct slclSock* sock = slclOpenSock( SLCL_AF_INET, SLCL_SOCK_STREAM, 0 );
 ```
 
 ## Features
