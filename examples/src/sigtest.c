@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// define a signal handler
 int handler(int x)
 {
 	puts("Interrupt.");
@@ -19,7 +20,7 @@ int main(int argc, char** argv)
 		slclPerror("signal");
 		exit(1);
 	}
-	
+	// cause SIGABRT
 	abort();
 
 }

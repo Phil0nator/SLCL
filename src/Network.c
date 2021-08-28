@@ -688,6 +688,16 @@ void slclFreeAddress(struct slclSockaddr_in* addr)
     free(addr);
 }
 
+/**
+ * Get the os-dependent file descriptor from the opaque slcl socket type
+ * @param socket the socket to get from
+ * @returns os-dependent file descriptor
+ */
+int slclGetNativeSockfd( struct slclSock* socket )
+{
+    return *(int*)(socket);
+}
+
 #ifdef __cpluscplus
 SLCL_EXITCPP
 #endif

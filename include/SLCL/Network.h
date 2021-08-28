@@ -299,6 +299,13 @@ slclerr_t slclSetSockopt(
     const void* option_value, 
     size_t option_len );
 
+/**
+ * Get the os-dependent file descriptor from the opaque slcl socket type
+ * @param socket the socket to get from
+ * @returns os-dependent file descriptor
+ */
+int slclGetNativeSockfd( struct slclSock* socket );
+
 #ifdef __cplusplus
 SLCL_EXITCPP
 #endif

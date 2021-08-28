@@ -8,6 +8,7 @@
 int main(int argc, char const *argv[])
 {
     struct slclLibrary* lib;
+    // Load the dynamic library
     if ((lib = slclLoadLibrary( "liblibtestlib.so" )) == SLCL_FAILED)
     {
         slclPerror("loadlib");
@@ -15,11 +16,14 @@ int main(int argc, char const *argv[])
     }
     typedef void (*fnt) ();
     fnt superAwesomeFn;
+    // Extract a symbol
     if ( ( superAwesomeFn = slclGetSymbol( lib, "superAwesomeSymbol" ) ) == SLCL_FAILED )
     {
         slclPerror("loadsym");
         exit(1);
     }
+
+    // call the dynamic library function
     superAwesomeFn();
 
     return 0;
