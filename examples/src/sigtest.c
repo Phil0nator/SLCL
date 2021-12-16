@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
 	// This causes a silly popup in debug mode on windows, but the interrupt
 	// will still work after you press "ignore"
-	if (slclSigaction(SLCL_SIGABRT, handler) == SLCL_FAILED)
+	if (slclSigaction(SLCL_SIGABRT, (sigaction_t) handler) == SLCL_FAILED)
 	{
 		slclPerror("signal");
 		exit(1);
