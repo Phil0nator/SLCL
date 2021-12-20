@@ -7,6 +7,10 @@
 SLCL_ENTERCPP
 #endif
 
+#if defined(SLCL_TARGET_DARWIN)
+typedef void* __sighandler_t;
+#endif
+
 #if defined(SLCL_TARGET_WIN)
 #include <signal.h>
 
