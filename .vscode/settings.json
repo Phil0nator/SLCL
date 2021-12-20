@@ -21,7 +21,8 @@
         "socket_type.h": "c",
         "eventfd.h": "c",
         "cstdlib": "c",
-        "stdnoreturn.h": "c"
+        "stdnoreturn.h": "c",
+        "threads.h": "c"
     },
     "cmake.configureOnOpen": true
 }

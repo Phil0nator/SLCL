@@ -6,9 +6,15 @@
 
 #ifdef __cpluscplus
 SLCL_ENTERCPP
+#define SLCL_OPTIONAL_THREADSAFETY_KEYWORD thread_local
+#elif __STDC_VERSION__ >= 201112L
+#include <threads.h>
+#define SLCL_OPTIONAL_THREADSAFETY_KEYWORD thread_local
+#else
+#define SLCL_OPTIONAL_THREADSAFETY_KEYWORD
 #endif
 
-char slclerrmsg[1024];
+SLCL_OPTIONAL_THREADSAFETY_KEYWORD char slclerrmsg[1024];
 
 void slclSeterr( const char* msg )
 {
