@@ -2,9 +2,12 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "InternalErrors.h"
-#include <malloc.h>
 #include <string.h>
 #include <stdlib.h>
+
+#if !defined(SLCL_TARGET_DARWIN)
+#include <malloc.h>
+#endif
 
 #ifdef __cpluscplus
 SLCL_ENTERCPP
@@ -40,7 +43,7 @@ const slclAddressFamily SLCL_AF_MAX = AF_MAX;
 const slclSockProtocol SLCL_PF_UNSPEC = PF_UNSPEC;
 const slclSockProtocol SLCL_PF_LOCAL = PF_UNIX;
 const slclSockProtocol SLCL_PF_UNIX = PF_UNIX;
-const slclSockProtocol SLCL_PF_FILE = PF_UNIX; 
+const slclSockProtocol SLCL_PF_FILE = PF_UNIX;
 const slclSockProtocol SLCL_PF_INET = PF_INET;
 const slclSockProtocol SLCL_PF_IPX = PF_IPX;
 const slclSockProtocol SLCL_PF_APPLETALK = PF_APPLETALK;
@@ -133,7 +136,7 @@ struct slclSock* slclOpenSock(slclAddressFamily domain, slclSockType type, slclS
     slclInitWinsock();
     SOCKET tmp;
     if ((tmp = socket(domain, type, prot)) == INVALID_SOCKET)
-    { 
+    {
         slclSetWsaErrorMsg();
         return SLCL_FAILED;
     }
@@ -217,7 +220,7 @@ struct slclSock* slclAccept(struct slclSock* server)
         return SLCL_FAILED;
     }
 
-    
+
 
     struct slclSock* out = malloc(sizeof(struct slclSock));
     if (out == 0)
@@ -263,7 +266,7 @@ slclerr_t slclShutdown(struct slclSock* socket, enum slclShutdownMethod how)
 }
 
 slclerr_t slclCloseSock(struct slclSock* socket)
-{   
+{
     if (closesocket(socket->s) == SOCKET_ERROR)
     {
         slclSetWsaErrorMsg();
@@ -272,11 +275,11 @@ slclerr_t slclCloseSock(struct slclSock* socket)
     return SLCL_SUCCESS;
 }
 
-slclerr_t slclSetSockopt( 
-    struct slclSock* socket, 
-    slclSockoptLevel level, 
-    slclSockopt option_name, 
-    const void* option_value, 
+slclerr_t slclSetSockopt(
+    struct slclSock* socket,
+    slclSockoptLevel level,
+    slclSockopt option_name,
+    const void* option_value,
     size_t option_len )
     {
         if (( setsockopt( socket->s, level, option_name, option_value, option_len ) ) == SOCKET_ERROR)
@@ -288,7 +291,7 @@ slclerr_t slclSetSockopt(
     }
 
 
-#elif defined(SLCL_TARGET_UNIXBASED)
+#elif defined(SLCL_TARGET_UNIXBASED) && !defined(SLCL_TARGET_DARWIN)
 // Linux declarations
 #   include <sys/socket.h>
 #   include <arpa/inet.h>
@@ -583,11 +586,253 @@ struct slclSock* slclAccept( struct slclSock* server )
 }
 
 
-slclerr_t slclSetSockopt( 
-    struct slclSock* socket, 
-    slclSockoptLevel level, 
-    slclSockopt option_name, 
-    const void* option_value, 
+slclerr_t slclSetSockopt(
+    struct slclSock* socket,
+    slclSockoptLevel level,
+    slclSockopt option_name,
+    const void* option_value,
+    size_t option_len )
+    {
+        if ( setsockopt( socket->fd, level, option_name, option_value, option_len ) == -1 )
+        {
+            slclSeterr( strerror( errno ) );
+            return SLCL_ERROR;
+        }
+        return SLCL_SUCCESS;
+    }
+
+#elif defined(SLCL_TARGET_DARWIN)
+
+#   include <sys/socket.h>
+#   include <arpa/inet.h>
+#   include <string.h>
+#   include <errno.h>
+#   include <unistd.h>
+
+const slclAddressFamily SLCL_AF_UNSPEC = AF_UNSPEC;
+const slclAddressFamily SLCL_AF_LOCAL = AF_LOCAL;
+const slclAddressFamily SLCL_AF_UNIX = AF_UNIX;
+const slclAddressFamily SLCL_AF_INET = AF_INET;
+const slclAddressFamily SLCL_AF_IPX = AF_IPX;
+const slclAddressFamily SLCL_AF_APPLETALK = AF_APPLETALK;
+const slclAddressFamily SLCL_AF_INET6 = AF_INET6;
+const slclAddressFamily SLCL_AF_DECnet = AF_DECnet;
+const slclAddressFamily SLCL_AF_NETBEUI = AF_NETBIOS;
+const slclAddressFamily SLCL_AF_ROUTE = AF_ROUTE;
+const slclAddressFamily SLCL_AF_SNA = AF_SNA;
+const slclAddressFamily SLCL_AF_ISDN = AF_ISDN;
+const slclAddressFamily SLCL_AF_VSOCK = AF_VSOCK;
+const slclAddressFamily SLCL_AF_MAX = AF_MAX;
+
+const slclSockProtocol SLCL_PF_UNSPEC = PF_UNSPEC;
+const slclSockProtocol SLCL_PF_LOCAL = PF_LOCAL;
+const slclSockProtocol SLCL_PF_UNIX = PF_UNIX;
+const slclSockProtocol SLCL_PF_FILE = PF_UNIX;
+const slclSockProtocol SLCL_PF_INET = PF_INET;
+const slclSockProtocol SLCL_PF_IPX = PF_IPX;
+const slclSockProtocol SLCL_PF_APPLETALK = PF_APPLETALK;
+const slclSockProtocol SLCL_PF_INET6 = PF_INET6;
+const slclSockProtocol SLCL_PF_DECnet = PF_DECnet;
+const slclSockProtocol SLCL_PF_NETBEUI = PF_NETBIOS;
+const slclSockProtocol SLCL_PF_KEY = PF_KEY;
+const slclSockProtocol SLCL_PF_ROUTE = PF_ROUTE;
+const slclSockProtocol SLCL_PF_SNA = PF_SNA;
+const slclSockProtocol SLCL_PF_ISDN = PF_ISDN;
+const slclSockProtocol SLCL_PF_VSOCK = PF_VSOCK;
+const slclSockProtocol SLCL_PF_MAX = PF_MAX;
+
+const slclSockType SLCL_SOCK_STREAM = SOCK_STREAM;
+const slclSockType SLCL_SOCK_DGRAM = SOCK_DGRAM;
+const slclSockType SLCL_SOCK_RAW = SOCK_RAW;
+const slclSockType SLCL_SOCK_RDM = SOCK_RDM;
+const slclSockType SLCL_SOCK_SEQPACKET = SOCK_SEQPACKET;
+
+const slclSockoptLevel SLCL_SOL_IPPROTO_IP = IPPROTO_IP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_IPV6 = IPPROTO_IPV6;
+const slclSockoptLevel SLCL_SOL_IPPROTO_ICMP = IPPROTO_ICMP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_RAW = IPPROTO_RAW;
+const slclSockoptLevel SLCL_SOL_IPPROTO_TCP = IPPROTO_TCP;
+const slclSockoptLevel SLCL_SOL_IPPROTO_UDP = IPPROTO_UDP;
+const slclSockoptLevel SLCL_SOL_SOCKET = SOL_SOCKET;
+
+
+const slclSockopt SLCL_SO_DEBUG     = SO_DEBUG;
+const slclSockopt SLCL_SO_BROADCAST = SO_BROADCAST;
+const slclSockopt SLCL_SO_REUSEADDR = SO_REUSEADDR;
+const slclSockopt SLCL_SO_KEEPALIVE = SO_KEEPALIVE;
+const slclSockopt SLCL_SO_LINGER = SO_LINGER;
+const slclSockopt SLCL_SO_OOBINLINE = SO_OOBINLINE;
+const slclSockopt SLCL_SO_SNDBUF = SO_SNDBUF;
+const slclSockopt SLCL_SO_RCVBUF = SO_RCVBUF;
+const slclSockopt SLCL_SO_DONTROUTE = SO_DONTROUTE;
+const slclSockopt SLCL_SO_RCVLOWAT = SO_RCVLOWAT;
+const slclSockopt SLCL_SO_RCVTIMEO = SO_RCVTIMEO;
+const slclSockopt SLCL_SO_SNDLOWAT = SO_SNDLOWAT;
+const slclSockopt SLCL_SO_SNDTIMEO = SO_SNDTIMEO;
+
+typedef int fd_t;
+
+typedef struct slclSock
+{
+    fd_t fd;
+} slclSock_t;
+
+typedef struct slclSockaddr_in
+{
+    struct sockaddr_in addr;
+} slclSockaddr_in_t;
+
+
+struct slclSockaddr_in* slclCreateAddress( slclAddressFamily domain, int address, short port )
+{
+    slclSockaddr_in_t* out = malloc(sizeof(slclSockaddr_in_t));
+    out->addr.sin_addr.s_addr = address;
+    out->addr.sin_family = domain;
+    out->addr.sin_port = port;
+    return out;
+}
+struct slclSockaddr_in* slclCreateStrAddress( slclAddressFamily domain, const char* address, short port )
+{
+    slclSockaddr_in_t* out = slclCreateAddress(domain, 0, port);
+    slclerr_t err;
+    if ((err = inet_aton( address, &out->addr.sin_addr )) == 0)
+    {
+        slclSeterr( "Invalid IP address." );
+        return SLCL_FAILED;
+    }
+    return out;
+}
+
+slclerr_t slclShutdown( struct slclSock* socket, enum slclShutdownMethod how )
+{
+    slclerr_t error = shutdown(socket->fd, how);
+    if (error == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    return SLCL_SUCCESS;
+}
+
+slclerr_t slclCloseSock( struct slclSock* socket )
+{
+    if (close( socket->fd ) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    free(socket);
+    return SLCL_SUCCESS;
+}
+
+
+struct slclSock* slclOpenSock( slclAddressFamily domain, slclSockType type, slclSockProtocol protocol  )
+{
+    slclerr_t err;
+    // open a standard tcp socket
+    fd_t temporary = socket( domain, type, protocol );
+    if (temporary == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_FAILED;
+    }
+    struct slclSock* outsock = malloc( sizeof(struct slclSock) );
+    outsock->fd = temporary;
+    return outsock;
+}
+
+slclerr_t slclConnect( struct slclSock* sock, struct slclSockaddr_in* addr )
+{
+    slclerr_t err;
+
+    // Try to connect
+    if ((err = connect( sock->fd, (struct sockaddr*) &addr->addr, sizeof(struct sockaddr_in) )) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+
+
+    return SLCL_SUCCESS;
+}
+
+slclerr_t slclSend( struct slclSock* sock, const char* data, size_t bytes )
+{
+    slclerr_t err;
+
+    if ((err = send(sock->fd, data, bytes, 0)) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+
+    return err;
+
+}
+
+slclerr_t slclRecv( struct slclSock* sock, char* buffer, size_t bytes )
+{
+    slclerr_t recved;
+    if ((recved = recv( sock->fd, buffer, bytes, 0)) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    return recved;
+}
+
+slclerr_t slclBind( struct slclSock* socket, struct slclSockaddr_in* addr )
+{
+    // try to bind socket
+    slclerr_t err;
+    if ((err = bind( socket->fd, (struct sockaddr*) &addr->addr, sizeof(struct sockaddr_in) )) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    return SLCL_SUCCESS;
+}
+
+slclerr_t slclListen( struct slclSock* socket, int backlog )
+{
+    // try to listen
+    slclerr_t err;
+    if ((err = listen( socket->fd, backlog )) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_ERROR;
+    }
+    return SLCL_SUCCESS;
+}
+
+
+struct slclSock* slclAccept( struct slclSock* server )
+{
+
+    slclerr_t err;
+    struct sockaddr_storage addr = {0};
+    socklen_t size = sizeof(addr);
+
+    // Attempt unix accept()
+    // (blocking)
+    if ((err = accept( server->fd, (struct sockaddr*) &addr, &size )) == -1)
+    {
+        slclSeterr( strerror( errno ) );
+        return SLCL_FAILED;
+    }
+    // Once accept has found a client, it is returned here
+    struct slclSock* outsock = malloc( sizeof( struct slclSock ) );
+    outsock->fd = err;
+    return outsock;
+
+}
+
+
+slclerr_t slclSetSockopt(
+    struct slclSock* socket,
+    slclSockoptLevel level,
+    slclSockopt option_name,
+    const void* option_value,
     size_t option_len )
     {
         if ( setsockopt( socket->fd, level, option_name, option_value, option_len ) == -1 )
