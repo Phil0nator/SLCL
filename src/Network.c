@@ -565,8 +565,8 @@ struct slclSock* slclAccept( struct slclSock* server )
 {
 
     slclerr_t err;
-    struct sockaddr_storage addr;
-    socklen_t size;
+    struct sockaddr_storage addr = {0};
+    socklen_t size = sizeof(addr);
 
     // Attempt unix accept()
     // (blocking)
