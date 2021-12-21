@@ -7,6 +7,8 @@
 #ifdef __cpluscplus
 SLCL_ENTERCPP
 #define SLCL_OPTIONAL_THREADSAFETY_KEYWORD thread_local
+#elif defined(SLCL_TARGET_DARWIN)
+#define SLCL_OPTIONAL_THREADSAFETY_KEYWORD __thread
 #elif __STDC_VERSION__ >= 201112L
 #include <threads.h>
 #define SLCL_OPTIONAL_THREADSAFETY_KEYWORD thread_local
